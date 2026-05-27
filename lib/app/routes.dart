@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/home/view/home_screen.dart';
@@ -21,7 +22,12 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (_, _) => const LoginScreen(),
+      pageBuilder: (_, _) => CustomTransitionPage(
+        child: const LoginScreen(),
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
     ),
     GoRoute(
       path: '/onboarding/terms',

@@ -38,10 +38,10 @@ class SocialLoginButton extends StatelessWidget {
           children: [
             SvgPicture.asset(
               isKakao ? 'assets/icons/ic_kakao.svg' : 'assets/icons/ic_apple.svg',
-              width: 16,
-              height: 16,
+              width: isKakao ? 16 : 15,
+              height: 15,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Text(
               isKakao ? '카카오로 로그인' : 'Apple로 로그인',
               style: AppTextTheme.body2Sb16.copyWith(
