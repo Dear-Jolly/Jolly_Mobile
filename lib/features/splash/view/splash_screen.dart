@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/check_pattern.dart';
 import '../view_model/splash_view_model.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -42,107 +43,23 @@ class _SplashViewState extends State<_SplashView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.ivory100,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'D',
-                    style: TextStyle(
-                      fontFamily: 'LastChristmas',
-                      fontSize: 53,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'ear',
-                    style: TextStyle(
-                      fontFamily: 'Selino',
-                      fontSize: 40,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  TextSpan(
-                    text: ' ',
-                  ),
-                  TextSpan(
-                    text: 'J',
-                    style: TextStyle(
-                      fontFamily: 'LastChristmas',
-                      fontSize: 55,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'olly',
-                    style: TextStyle(
-                      fontFamily: 'Selino',
-                      fontSize: 41,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-            RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                style: TextStyle(
-                  fontFamily: 'MADE Mirage',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                  letterSpacing: -0.2,
-                  color: AppColors.black,
+      body: Stack(
+        children: [
+          const CheckPattern(),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 38, top: 140),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Image.asset(
+                  'assets/images/img_splash_logo.png',
+                  width: 277,
+                  height: 369,
                 ),
-                children: [
-                  TextSpan(text: 'W'),
-                  TextSpan(
-                    text: 'rite to Jolly,',
-                    style: TextStyle(
-                      fontFamily: 'MADE Mirage',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
               ),
             ),
-            RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                style: TextStyle(
-                  fontFamily: 'MADE Mirage',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                  letterSpacing: -0.2,
-                  color: AppColors.black,
-                ),
-                children: [
-                  TextSpan(text: 'F'),
-                  TextSpan(
-                    text: 'eel  jolly',
-                    style: TextStyle(
-                      fontFamily: 'MADE Mirage',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
