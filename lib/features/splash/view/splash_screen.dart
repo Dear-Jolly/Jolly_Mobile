@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/di/locator.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/check_pattern.dart';
+import '../../../domain/usecase/auth/get_user_usecase.dart';
 import '../view_model/splash_view_model.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -12,7 +15,8 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => SplashViewModel(),
+      create: (_) =>
+          SplashViewModel(locator<SecureStorage>(), locator<GetUserUseCase>()),
       child: const _SplashView(),
     );
   }
@@ -33,9 +37,9 @@ class _SplashViewState extends State<_SplashView> {
   }
 
   Future<void> _init() async {
-    await context.read<SplashViewModel>().initialize();
+    final nextRoute = await context.read<SplashViewModel>().initialize();
     if (mounted) {
-      context.go('/login');
+      context.go(nextRoute);
     }
   }
 
@@ -46,17 +50,13 @@ class _SplashViewState extends State<_SplashView> {
       body: Stack(
         children: [
           const CheckPattern(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 38, top: 140),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Image.asset(
-                  'assets/images/img_splash_logo.png',
-                  width: 277,
-                  height: 369,
-                ),
-              ),
+          Positioned(
+            left: 38,
+            top: 140,
+            child: Image.asset(
+              'assets/images/img_splash_logo.png',
+              width: 277,
+              height: 369,
             ),
           ),
         ],
