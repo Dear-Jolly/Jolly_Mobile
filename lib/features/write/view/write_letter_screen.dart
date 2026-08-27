@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
+import '../../../core/widgets/check_pattern.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
+import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_dialog.dart';
+import '../../../core/widgets/jolly_letter_header.dart';
 import '../../../core/widgets/jolly_toast.dart';
+import '../../../domain/model/result.dart';
+import '../../../domain/usecase/letter/create_letter_usecase.dart';
 
 class WriteLetterScreen extends StatefulWidget {
   const WriteLetterScreen({super.key});
@@ -17,6 +23,8 @@ class WriteLetterScreen extends StatefulWidget {
 class _WriteLetterScreenState extends State<WriteLetterScreen> {
   final _contentController = TextEditingController();
   bool _showKoreanWarning = false;
+  bool _canSubmit = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -33,12 +41,15 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
   void _checkContent() {
     final text = _contentController.text;
     final hasKorean = RegExp(r'[가-힣ㄱ-ㅎㅏ-ㅣ]').hasMatch(text);
-    if (hasKorean != _showKoreanWarning) {
-      setState(() => _showKoreanWarning = hasKorean);
+    final canSubmit =
+        text.trim().isNotEmpty && !hasKorean && text.length <= 500;
+    if (hasKorean != _showKoreanWarning || canSubmit != _canSubmit) {
+      setState(() {
+        _showKoreanWarning = hasKorean;
+        _canSubmit = canSubmit;
+      });
     }
   }
-
-  bool get _canSubmit => _contentController.text.trim().isNotEmpty;
 
   void _showConfirmDialog() async {
     final confirmed = await JollyDialog.show(
@@ -48,12 +59,13 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
       image: Image.asset(
         'assets/images/img_popup_writefinish.png',
         height: 120,
-        errorBuilder: (_, __, ___) => const SizedBox(height: 120),
+        errorBuilder: (context, error, stackTrace) =>
+            const SizedBox(height: 120),
       ),
       confirmText: '완료',
     );
     if (confirmed == true && mounted) {
-      context.go('/write/complete');
+      _submitLetter();
     }
   }
 
@@ -61,108 +73,119 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.ivory100,
-      appBar: JollyAppBar(
-        title: '편지 쓰기',
-        onBack: () => context.pop(),
-        actions: [
-          TextButton(
-            onPressed: _canSubmit ? _showConfirmDialog : null,
-            child: Text(
-              '완료',
-              style: AppTextTheme.body2Sb16.copyWith(
-                color: _canSubmit ? AppColors.burgundy : AppColors.gray400,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
+      appBar: JollyAppBar(onBack: () => context.pop()),
+      body: Stack(
         children: [
-          // TO and DATE (fixed)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          const CheckPattern(),
+          SafeArea(
+            top: false,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      'TO.',
-                      style: AppTextTheme.detail3Md13.copyWith(
-                        color: AppColors.gray500,
+                JollyLetterHeader(to: 'Jolly', date: _formattedDate()),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 362,
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: TextField(
+                          controller: _contentController,
+                          maxLength: 500,
+                          maxLines: null,
+                          expands: true,
+                          buildCounter:
+                              (
+                                BuildContext context, {
+                                required int currentLength,
+                                required bool isFocused,
+                                required int? maxLength,
+                              }) => const SizedBox.shrink(),
+                          textAlignVertical: TextAlignVertical.top,
+                          style: AppTextTheme.body3Md16.copyWith(
+                            color: AppColors.gray900,
+                            height: 1.8,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Please write your letter.',
+                            hintStyle: AppTextTheme.body3Md16.copyWith(
+                              color: AppColors.gray400,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                            border: InputBorder.none,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Jolly',
-                      style: AppTextTheme.detail3Md13.copyWith(
-                        color: AppColors.gray900,
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${_contentController.text.length}/500',
+                          style: AppTextTheme.detail3Md13.copyWith(
+                            color: AppColors.gray400,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      'DATE.',
-                      style: AppTextTheme.detail3Md13.copyWith(
-                        color: AppColors.gray500,
+                const Spacer(),
+                if (_showKoreanWarning)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    child: JollyToast(
+                      message: '영어로 작성해 주세요. 이 편지는 영어만 검토돼요!',
+                      icon: Image.asset(
+                        'assets/images/img_exclamation.png',
+                        width: 16,
+                        height: 16,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox(width: 16),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formattedDate(),
-                      style: AppTextTheme.detail3Md13.copyWith(
-                        color: AppColors.gray900,
-                      ),
-                    ),
-                  ],
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: JollyButton(
+                    text: _isSubmitting ? '전달 중' : '전달하기',
+                    enabled: _canSubmit && !_isSubmitting,
+                    onPressed: _showConfirmDialog,
+                  ),
                 ),
+                const SizedBox(height: 29),
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.gray200),
-          // Letter content
-          Expanded(
-            child: TextField(
-              controller: _contentController,
-              maxLines: null,
-              expands: true,
-              textAlignVertical: TextAlignVertical.top,
-              style: AppTextTheme.body3Md16.copyWith(
-                color: AppColors.gray900,
-                height: 1.8,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Dear Jolly,\nWrite your letter in English...',
-                hintStyle: AppTextTheme.body3Md16.copyWith(
-                  color: AppColors.gray400,
-                  height: 1.8,
-                ),
-                contentPadding: const EdgeInsets.all(24),
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-          // Korean warning toast
-          if (_showKoreanWarning)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: JollyToast(
-                message: '영어로 작성해 주세요. 이 편지는 영어만 검토돼요!',
-                icon: Image.asset(
-                  'assets/images/img_exclamation.png',
-                  width: 16,
-                  height: 16,
-                  errorBuilder: (_, __, ___) => const SizedBox(width: 16),
-                ),
-              ),
-            ),
-          const SizedBox(height: 8),
         ],
       ),
     );
+  }
+
+  Future<void> _submitLetter() async {
+    setState(() => _isSubmitting = true);
+
+    final result = await locator<CreateLetterUseCase>().execute(
+      _contentController.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    switch (result) {
+      case Success():
+        context.go('/write/complete');
+      case Failure(message: final message):
+        JollyToast.show(context, message: message);
+    }
   }
 
   String _formattedDate() {
