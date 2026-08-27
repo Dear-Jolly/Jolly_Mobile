@@ -7,11 +7,7 @@ class JollyToast extends StatelessWidget {
   final String message;
   final Widget? icon;
 
-  const JollyToast({
-    super.key,
-    required this.message,
-    this.icon,
-  });
+  const JollyToast({super.key, required this.message, this.icon});
 
   static void show(
     BuildContext context, {
@@ -25,10 +21,7 @@ class JollyToast extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              if (icon != null) ...[
-                icon,
-                const SizedBox(width: 8),
-              ],
+              if (icon != null) ...[icon, const SizedBox(width: 8)],
               Expanded(
                 child: Text(
                   message,
@@ -41,9 +34,7 @@ class JollyToast extends StatelessWidget {
           ),
           backgroundColor: AppColors.gray900,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           duration: duration,
         ),
@@ -60,16 +51,11 @@ class JollyToast extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (icon != null) ...[
-            icon!,
-            const SizedBox(width: 8),
-          ],
+          if (icon != null) ...[icon!, const SizedBox(width: 8)],
           Expanded(
             child: Text(
               message,
-              style: AppTextTheme.detail3Md13.copyWith(
-                color: AppColors.white,
-              ),
+              style: AppTextTheme.detail3Md13.copyWith(color: AppColors.white),
             ),
           ),
         ],

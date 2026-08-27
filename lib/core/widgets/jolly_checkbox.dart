@@ -32,29 +32,26 @@ class JollyCheckbox extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 56,
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.burgundy,
-          ),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AppColors.burgundy),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text(
+              label,
+              style: AppTextTheme.body2Sb16.copyWith(color: AppColors.burgundy),
+            ),
             SvgPicture.asset(
               isChecked
                   ? 'assets/icons/ic_checkbox_selected.svg'
                   : 'assets/icons/ic_checkbox.svg',
               width: 24,
               height: 24,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTextTheme.body2Sb16.copyWith(
-                color: AppColors.burgundy,
-              ),
             ),
           ],
         ),
@@ -65,26 +62,28 @@ class JollyCheckbox extends StatelessWidget {
   Widget _buildItem() {
     return GestureDetector(
       onTap: onTap,
-      child: Row(
-        children: [
-          SvgPicture.asset(
-            isChecked
-                ? 'assets/icons/ic_checkbox_selected.svg'
-                : 'assets/icons/ic_checkbox.svg',
-            width: 24,
-            height: 24,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextTheme.body3Md16.copyWith(
-                color: AppColors.gray900,
+      child: SizedBox(
+        height: 36,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextTheme.body6Md15.copyWith(
+                  color: AppColors.gray900,
+                ),
               ),
             ),
-          ),
-          if (trailing != null) trailing!,
-        ],
+            trailing ??
+                SvgPicture.asset(
+                  isChecked
+                      ? 'assets/icons/ic_checkbox_selected.svg'
+                      : 'assets/icons/ic_checkbox.svg',
+                  width: 24,
+                  height: 24,
+                ),
+          ],
+        ),
       ),
     );
   }

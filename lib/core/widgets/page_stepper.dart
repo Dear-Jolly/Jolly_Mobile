@@ -21,15 +21,19 @@ class PageStepper extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(totalSteps, (index) {
-        return Container(
-          width: dotSize,
-          height: dotSize,
-          margin: EdgeInsets.symmetric(horizontal: spacing),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: index == currentStep
-                ? AppColors.burgundy
-                : AppColors.gray300,
+        return Padding(
+          padding: EdgeInsets.only(
+            right: index == totalSteps - 1 ? 0 : spacing,
+          ),
+          child: Container(
+            width: dotSize,
+            height: dotSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: index == currentStep
+                  ? AppColors.burgundy
+                  : AppColors.gray300,
+            ),
           ),
         );
       }),

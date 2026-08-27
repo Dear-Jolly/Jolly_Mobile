@@ -10,11 +10,7 @@ class SocialLoginButton extends StatelessWidget {
   final SocialLoginType type;
   final VoidCallback? onPressed;
 
-  const SocialLoginButton({
-    super.key,
-    required this.type,
-    this.onPressed,
-  });
+  const SocialLoginButton({super.key, required this.type, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -26,18 +22,20 @@ class SocialLoginButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isKakao ? AppColors.kakaoYellow : AppColors.appleBlack,
+          backgroundColor: isKakao
+              ? AppColors.kakaoYellow
+              : AppColors.appleBlack,
           foregroundColor: isKakao ? AppColors.kakaoBrown : AppColors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              isKakao ? 'assets/icons/ic_kakao.svg' : 'assets/icons/ic_apple.svg',
+              isKakao
+                  ? 'assets/icons/ic_kakao.svg'
+                  : 'assets/icons/ic_apple.svg',
               width: isKakao ? 16 : 15,
               height: 15,
             ),

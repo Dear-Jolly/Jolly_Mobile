@@ -54,18 +54,13 @@ class JollyDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (image != null) ...[
-              image!,
-              const SizedBox(height: 16),
-            ],
+            if (image != null) ...[image!, const SizedBox(height: 16)],
             Text(
               title,
               textAlign: TextAlign.center,

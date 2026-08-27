@@ -9,7 +9,9 @@ class JollyTextField extends StatelessWidget {
   final String? hintText;
   final String? errorText;
   final String? helperText;
+  final String? counterText;
   final bool showClearButton;
+  final int? maxLength;
   final ValueChanged<String>? onChanged;
 
   const JollyTextField({
@@ -18,60 +20,108 @@ class JollyTextField extends StatelessWidget {
     this.hintText,
     this.errorText,
     this.helperText,
+    this.counterText,
     this.showClearButton = true,
+    this.maxLength,
     this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      style: AppTextTheme.body3Md16.copyWith(color: AppColors.gray900),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTextTheme.body3Md16.copyWith(color: AppColors.gray400),
-        errorText: errorText,
-        errorStyle: AppTextTheme.detail6Md12.copyWith(color: AppColors.red),
-        helperText: helperText,
-        helperStyle: AppTextTheme.detail6Md12.copyWith(
-          color: AppColors.gray500,
+    final supportingText = errorText ?? helperText;
+    final supportingColor = errorText == null
+        ? AppColors.burgundy
+        : AppColors.red;
+
+    Widget? hiddenCounter(
+      BuildContext context, {
+      required int currentLength,
+      required bool isFocused,
+      required int? maxLength,
+    }) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          maxLength: maxLength,
+          buildCounter: maxLength == null ? null : hiddenCounter,
+          onChanged: onChanged,
+          style: AppTextTheme.body3Md16.copyWith(color: AppColors.gray900),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: AppTextTheme.body3Md16.copyWith(
+              color: AppColors.gray400,
+            ),
+            counterText: '',
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: AppColors.burgundy),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: AppColors.burgundy),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: AppColors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: AppColors.red),
+            ),
+            suffixIcon: showClearButton && controller.text.isNotEmpty
+                ? IconButton(
+                    onPressed: () {
+                      controller.clear();
+                      onChanged?.call('');
+                    },
+                    icon: SvgPicture.asset(
+                      'assets/icons/ic_x_circle.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.gray400,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.gray300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.gray900),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.red),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.red),
-        ),
-        suffixIcon: showClearButton && controller.text.isNotEmpty
-            ? IconButton(
-                onPressed: () => controller.clear(),
-                icon: SvgPicture.asset(
-                  'assets/icons/ic_x_circle.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.gray400,
-                    BlendMode.srcIn,
+        if (supportingText != null || counterText != null) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (supportingText != null)
+                Expanded(
+                  child: Text(
+                    supportingText,
+                    style: AppTextTheme.detail6Md12.copyWith(
+                      color: supportingColor,
+                    ),
+                  ),
+                )
+              else
+                const Spacer(),
+              if (counterText != null)
+                Text(
+                  counterText!,
+                  style: AppTextTheme.detail6Md12.copyWith(
+                    color: supportingColor,
                   ),
                 ),
-              )
-            : null,
-      ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

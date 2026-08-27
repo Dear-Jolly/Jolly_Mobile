@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class CheckPattern extends StatelessWidget {
   final Color lineColor;
   final double gridSpacing;
@@ -9,7 +11,7 @@ class CheckPattern extends StatelessWidget {
 
   const CheckPattern({
     super.key,
-    this.lineColor = const Color(0xFFF6F3EB),
+    this.lineColor = AppColors.paperLine,
     this.gridSpacing = 15.0,
     this.strokeWidth = 2.0,
     this.majorLineInterval = 4,

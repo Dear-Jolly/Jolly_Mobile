@@ -6,10 +6,7 @@ import '../theme/app_text_theme.dart';
 class ReviewTip extends StatelessWidget {
   final List<String> tips;
 
-  const ReviewTip({
-    super.key,
-    required this.tips,
-  });
+  const ReviewTip({super.key, required this.tips});
 
   @override
   Widget build(BuildContext context) {
@@ -33,19 +30,12 @@ class ReviewTip extends StatelessWidget {
       widgets.add(
         Text(
           tips[i],
-          style: AppTextTheme.body6Md15.copyWith(
-            color: AppColors.gray900,
-          ),
+          style: AppTextTheme.body6Md15.copyWith(color: AppColors.gray900),
         ),
       );
       if (i < tips.length - 1) {
         widgets.add(const SizedBox(height: 12));
-        widgets.add(
-          const Divider(
-            color: AppColors.ivory200,
-            height: 1,
-          ),
-        );
+        widgets.add(const Divider(color: AppColors.ivory200, height: 1));
         widgets.add(const SizedBox(height: 12));
       }
     }

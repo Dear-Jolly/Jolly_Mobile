@@ -30,13 +30,11 @@ class JollyButton extends StatelessWidget {
           disabledBackgroundColor: AppColors.gray300,
           disabledForegroundColor: AppColors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         child: Text(
           text,
-          style: AppTextTheme.body2Sb16.copyWith(color: AppColors.white),
+          style: AppTextTheme.head7Sb18.copyWith(color: AppColors.white),
         ),
       ),
     );
@@ -63,9 +61,7 @@ class JollyOutlinedButton extends StatelessWidget {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: AppColors.gray300),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         child: Text(
           text,
