@@ -1,29 +1,19 @@
 import '../../../domain/entity/home_data.dart';
-import 'letter_dto.dart';
 
 class HomeDto {
-  final int stampCount;
-  final List<LetterDto> letters;
+  final String nickname;
+  final int totalStampCount;
 
-  const HomeDto({
-    required this.stampCount,
-    required this.letters,
-  });
+  const HomeDto({required this.nickname, required this.totalStampCount});
 
   factory HomeDto.fromJson(Map<String, dynamic> json) {
     return HomeDto(
-      stampCount: json['stampCount'] as int? ?? 0,
-      letters: (json['letters'] as List<dynamic>?)
-              ?.map((e) => LetterDto.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      nickname: json['nickname'] as String? ?? '',
+      totalStampCount: json['totalStampCount'] as int? ?? 0,
     );
   }
 
   HomeData toEntity() {
-    return HomeData(
-      stampCount: stampCount,
-      letters: letters.map((e) => e.toEntity()).toList(),
-    );
+    return HomeData(nickname: nickname, totalStampCount: totalStampCount);
   }
 }

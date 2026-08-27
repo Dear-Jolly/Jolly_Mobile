@@ -1,67 +1,109 @@
 import '../../../domain/entity/letter_review.dart';
+import 'letter_dto.dart';
 
 class LetterReviewDto {
+  final LetterDto letter;
   final int letterId;
+  final DateTime date;
   final String originalContent;
+  final String? stampImage;
+  final String status;
   final String correctedContent;
-  final List<ReviewFeedbackDto> feedbacks;
+  final List<String> tips;
+  final List<CorrectionSegmentDto> correctionSegments;
 
   const LetterReviewDto({
+    required this.letter,
     required this.letterId,
+    required this.date,
     required this.originalContent,
+    this.stampImage,
+    required this.status,
     required this.correctedContent,
-    required this.feedbacks,
+    required this.tips,
+    required this.correctionSegments,
   });
 
   factory LetterReviewDto.fromJson(Map<String, dynamic> json) {
+    final letter = LetterDto.fromDetailJson(json);
+    final feedback = json['feedback'] as Map<String, dynamic>?;
+    final rawSegments = feedback?['correctionSegments'] as List<dynamic>?;
+    final segments =
+        rawSegments
+            ?.map(
+              (e) => CorrectionSegmentDto.fromJson(e as Map<String, dynamic>),
+            )
+            .toList() ??
+        [
+          CorrectionSegmentDto(
+            sequence: 1,
+            originalText: letter.content,
+            correctedText: letter.content,
+            type: 'UNCHANGED',
+          ),
+        ];
+    segments.sort((a, b) => a.sequence.compareTo(b.sequence));
+
     return LetterReviewDto(
-      letterId: json['letterId'] as int,
-      originalContent: json['originalContent'] as String,
-      correctedContent: json['correctedContent'] as String,
-      feedbacks: (json['feedbacks'] as List<dynamic>)
-          .map((e) => ReviewFeedbackDto.fromJson(e as Map<String, dynamic>))
+      letter: letter,
+      letterId: letter.id,
+      date: letter.date,
+      originalContent: letter.content,
+      stampImage: letter.stampImage,
+      status: json['status'] as String? ?? 'SUBMITTED',
+      correctedContent:
+          feedback?['correctedContent'] as String? ?? letter.content,
+      tips: (feedback?['tips'] as List<dynamic>? ?? [])
+          .map((e) => e as String)
           .toList(),
+      correctionSegments: segments,
     );
   }
 
   LetterReview toEntity() {
     return LetterReview(
       letterId: letterId,
+      date: date,
       originalContent: originalContent,
+      stampImage: stampImage,
+      status: letter.toEntity().status,
       correctedContent: correctedContent,
-      feedbacks: feedbacks.map((e) => e.toEntity()).toList(),
+      tips: tips,
+      correctionSegments: correctionSegments.map((e) => e.toEntity()).toList(),
     );
   }
 }
 
-class ReviewFeedbackDto {
-  final String category;
-  final String original;
-  final String suggestion;
-  final String explanation;
+class CorrectionSegmentDto {
+  final int sequence;
+  final String originalText;
+  final String correctedText;
+  final String type;
 
-  const ReviewFeedbackDto({
-    required this.category,
-    required this.original,
-    required this.suggestion,
-    required this.explanation,
+  const CorrectionSegmentDto({
+    required this.sequence,
+    required this.originalText,
+    required this.correctedText,
+    required this.type,
   });
 
-  factory ReviewFeedbackDto.fromJson(Map<String, dynamic> json) {
-    return ReviewFeedbackDto(
-      category: json['category'] as String,
-      original: json['original'] as String,
-      suggestion: json['suggestion'] as String,
-      explanation: json['explanation'] as String,
+  factory CorrectionSegmentDto.fromJson(Map<String, dynamic> json) {
+    return CorrectionSegmentDto(
+      sequence: json['sequence'] as int? ?? 0,
+      originalText: json['originalText'] as String? ?? '',
+      correctedText: json['correctedText'] as String? ?? '',
+      type: json['type'] as String? ?? 'UNCHANGED',
     );
   }
 
-  ReviewFeedback toEntity() {
-    return ReviewFeedback(
-      category: category,
-      original: original,
-      suggestion: suggestion,
-      explanation: explanation,
+  CorrectionSegment toEntity() {
+    return CorrectionSegment(
+      sequence: sequence,
+      originalText: originalText,
+      correctedText: correctedText,
+      type: type == 'MODIFIED'
+          ? CorrectionSegmentType.modified
+          : CorrectionSegmentType.unchanged,
     );
   }
 }

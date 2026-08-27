@@ -1,9 +1,10 @@
-enum LetterStatus { sent, arrived, viewed }
+enum LetterStatus { submitted, feedbackInProgress, feedbackCompleted }
 
 class Letter {
   final int id;
   final String content;
-  final DateTime createdAt;
+  final DateTime date;
+  final DateTime? createdAt;
   final String? stampImage;
   final LetterStatus status;
   final bool isNew;
@@ -11,15 +12,19 @@ class Letter {
   const Letter({
     required this.id,
     required this.content,
-    required this.createdAt,
+    required this.date,
+    this.createdAt,
     this.stampImage,
-    this.status = LetterStatus.sent,
+    this.status = LetterStatus.submitted,
     this.isNew = false,
   });
+
+  bool get hasFeedback => status == LetterStatus.feedbackCompleted;
 
   Letter copyWith({
     int? id,
     String? content,
+    DateTime? date,
     DateTime? createdAt,
     String? stampImage,
     LetterStatus? status,
@@ -28,6 +33,7 @@ class Letter {
     return Letter(
       id: id ?? this.id,
       content: content ?? this.content,
+      date: date ?? this.date,
       createdAt: createdAt ?? this.createdAt,
       stampImage: stampImage ?? this.stampImage,
       status: status ?? this.status,

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../core/config/api_config.dart';
 import '../dto/home_dto.dart';
 import '../dto/letter_dto.dart';
 import '../dto/letter_review_dto.dart';
@@ -15,28 +16,44 @@ class LetterRemoteDataSource {
   }
 
   Future<List<LetterDto>> getLetters() async {
-    final response = await _dio.get('/letters');
-    final list = response.data as List<dynamic>;
-    return list
-        .map((e) => LetterDto.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final response = await _dio.get(
+      '/letters',
+      queryParameters: {'page': 0, 'size': 100, 'sort': 'date,desc'},
+    );
+    return LetterListDto.fromJson(
+      response.data as Map<String, dynamic>,
+    ).letters;
   }
 
   Future<LetterDto> getLetterDetail(int letterId) async {
     final response = await _dio.get('/letters/$letterId');
-    return LetterDto.fromJson(response.data as Map<String, dynamic>);
+    return LetterDto.fromDetailJson(response.data as Map<String, dynamic>);
   }
 
   Future<LetterDto> createLetter(String content) async {
+    final now = DateTime.now();
     final response = await _dio.post(
-      '/letter',
-      data: {'content': content},
+      '/letters',
+      data: {
+        'content': content,
+        'writtenAt': _formatDateTime(now),
+        'timeZone': ApiConfig.defaultTimeZone,
+      },
     );
-    return LetterDto.fromJson(response.data as Map<String, dynamic>);
+    return LetterDto.fromCreateJson(
+      response.data as Map<String, dynamic>,
+      content: content,
+    );
   }
 
   Future<LetterReviewDto> getLetterReview(int letterId) async {
-    final response = await _dio.get('/letters/$letterId/review');
+    final response = await _dio.get('/letters/$letterId');
     return LetterReviewDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final value = dateTime.toIso8601String();
+    final dotIndex = value.indexOf('.');
+    return dotIndex == -1 ? value : value.substring(0, dotIndex);
   }
 }
