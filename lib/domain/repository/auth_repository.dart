@@ -1,9 +1,15 @@
+import '../entity/auth_session.dart';
 import '../entity/user.dart';
 import '../model/result.dart';
 
 abstract class AuthRepository {
-  Future<Result<User>> loginWithKakao();
-  Future<Result<User>> loginWithApple();
+  Uri getAuthorizationUri(LoginProvider provider);
+  Future<Result<AuthSession>> completeSocialLogin(Uri callbackUri);
+  Future<Result<void>> agreeTerms({
+    required bool serviceAgreed,
+    required bool privacyAgreed,
+    required bool marketingAgreed,
+  });
   Future<Result<void>> logout();
   Future<Result<void>> deleteAccount();
   Future<Result<User>> registerNickname(String nickname);

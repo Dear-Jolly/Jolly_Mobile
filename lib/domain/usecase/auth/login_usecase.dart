@@ -1,3 +1,4 @@
+import '../../entity/auth_session.dart';
 import '../../entity/user.dart';
 import '../../model/result.dart';
 import '../../repository/auth_repository.dart';
@@ -7,11 +8,11 @@ class LoginUseCase {
 
   const LoginUseCase(this._repository);
 
-  Future<Result<User>> executeWithKakao() {
-    return _repository.loginWithKakao();
+  Uri authorizationUri(LoginProvider provider) {
+    return _repository.getAuthorizationUri(provider);
   }
 
-  Future<Result<User>> executeWithApple() {
-    return _repository.loginWithApple();
+  Future<Result<AuthSession>> completeWithCallback(Uri callbackUri) {
+    return _repository.completeSocialLogin(callbackUri);
   }
 }

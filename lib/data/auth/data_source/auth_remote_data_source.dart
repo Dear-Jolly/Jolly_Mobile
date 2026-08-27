@@ -8,18 +8,8 @@ class AuthRemoteDataSource {
 
   const AuthRemoteDataSource(this._dio);
 
-  Future<TokenDto> login({
-    required String provider,
-    required String token,
-  }) async {
-    final response = await _dio.post(
-      '/auth/login',
-      data: {
-        'provider': provider,
-        'token': token,
-      },
-    );
-    return TokenDto.fromJson(response.data as Map<String, dynamic>);
+  Uri authorizationUri(String provider) {
+    return Uri.parse('${_dio.options.baseUrl}/auth/$provider');
   }
 
   Future<void> logout() async {
@@ -27,33 +17,43 @@ class AuthRemoteDataSource {
   }
 
   Future<void> deleteAccount() async {
-    await _dio.delete('/auth/account');
+    await _dio.delete('/users');
   }
 
-  Future<UserDto> registerNickname(String nickname) async {
+  Future<TermsAgreeDto> agreeTerms({
+    required bool serviceAgreed,
+    required bool privacyAgreed,
+    required bool marketingAgreed,
+  }) async {
     final response = await _dio.post(
-      '/users/nickname',
-      data: {'nickname': nickname},
+      '/users/terms',
+      data: {
+        'agreements': [
+          {'type': 'SERVICE', 'agreed': serviceAgreed},
+          {'type': 'PRIVACY', 'agreed': privacyAgreed},
+          {'type': 'MARKETING', 'agreed': marketingAgreed},
+        ],
+      },
     );
-    return UserDto.fromJson(response.data as Map<String, dynamic>);
+    return TermsAgreeDto.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<UserDto> updateNickname(String nickname) async {
+  Future<NicknameUpdateDto> updateNickname(String nickname) async {
     final response = await _dio.patch(
       '/users/nickname',
       data: {'nickname': nickname},
     );
-    return UserDto.fromJson(response.data as Map<String, dynamic>);
+    return NicknameUpdateDto.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<UserDto> getUser() async {
-    final response = await _dio.get('/users/me');
+    final response = await _dio.get('/users');
     return UserDto.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<TokenDto> refreshToken(String refreshToken) async {
     final response = await _dio.post(
-      '/auth/refresh',
+      '/auth/reissue',
       data: {'refreshToken': refreshToken},
     );
     return TokenDto.fromJson(response.data as Map<String, dynamic>);

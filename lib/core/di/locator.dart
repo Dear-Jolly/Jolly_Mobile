@@ -8,6 +8,7 @@ import '../../data/letter/repository/letter_repository_impl.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../../domain/repository/letter_repository.dart';
 import '../../domain/usecase/auth/delete_account_usecase.dart';
+import '../../domain/usecase/auth/agree_terms_usecase.dart';
 import '../../domain/usecase/auth/get_user_usecase.dart';
 import '../../domain/usecase/auth/login_usecase.dart';
 import '../../domain/usecase/auth/logout_usecase.dart';
@@ -31,12 +32,8 @@ void setupLocator() {
   );
 
   // Data Sources
-  locator.registerLazySingleton(
-    () => AuthRemoteDataSource(locator<Dio>()),
-  );
-  locator.registerLazySingleton(
-    () => LetterRemoteDataSource(locator<Dio>()),
-  );
+  locator.registerLazySingleton(() => AuthRemoteDataSource(locator<Dio>()));
+  locator.registerLazySingleton(() => LetterRemoteDataSource(locator<Dio>()));
 
   // Repositories
   locator.registerLazySingleton<AuthRepository>(
@@ -51,16 +48,31 @@ void setupLocator() {
 
   // Use Cases - Auth
   locator.registerFactory(() => LoginUseCase(locator<AuthRepository>()));
+  locator.registerFactory(() => AgreeTermsUseCase(locator<AuthRepository>()));
   locator.registerFactory(() => LogoutUseCase(locator<AuthRepository>()));
-  locator.registerFactory(() => DeleteAccountUseCase(locator<AuthRepository>()));
-  locator.registerFactory(() => RegisterNicknameUseCase(locator<AuthRepository>()));
-  locator.registerFactory(() => UpdateNicknameUseCase(locator<AuthRepository>()));
+  locator.registerFactory(
+    () => DeleteAccountUseCase(locator<AuthRepository>()),
+  );
+  locator.registerFactory(
+    () => RegisterNicknameUseCase(locator<AuthRepository>()),
+  );
+  locator.registerFactory(
+    () => UpdateNicknameUseCase(locator<AuthRepository>()),
+  );
   locator.registerFactory(() => GetUserUseCase(locator<AuthRepository>()));
 
   // Use Cases - Letter
-  locator.registerFactory(() => GetHomeDataUseCase(locator<LetterRepository>()));
+  locator.registerFactory(
+    () => GetHomeDataUseCase(locator<LetterRepository>()),
+  );
   locator.registerFactory(() => GetLettersUseCase(locator<LetterRepository>()));
-  locator.registerFactory(() => GetLetterDetailUseCase(locator<LetterRepository>()));
-  locator.registerFactory(() => CreateLetterUseCase(locator<LetterRepository>()));
-  locator.registerFactory(() => GetLetterReviewUseCase(locator<LetterRepository>()));
+  locator.registerFactory(
+    () => GetLetterDetailUseCase(locator<LetterRepository>()),
+  );
+  locator.registerFactory(
+    () => CreateLetterUseCase(locator<LetterRepository>()),
+  );
+  locator.registerFactory(
+    () => GetLetterReviewUseCase(locator<LetterRepository>()),
+  );
 }
