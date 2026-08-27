@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
+import '../../../core/widgets/check_pattern.dart';
 import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/page_stepper.dart';
 
@@ -27,97 +28,119 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.ivory100,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() => _currentPage = index);
-                },
-                children: [
-                  _buildPage(
-                    imagePath: 'assets/images/img_onboarding1.png',
-                    title: '영어로 편지를 작성하고\nAI 검토를 받아보세요',
-                    subtitle: 'AI가 문법과 표현을 검토해\n더 나은 편지를 쓸 수 있도록 도와드려요',
+      body: Stack(
+        children: [
+          const CheckPattern(),
+          SafeArea(
+            child: Stack(
+              children: [
+                PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() => _currentPage = index);
+                  },
+                  children: [
+                    _buildPage(
+                      imagePath: 'assets/images/img_onboarding1.png',
+                      imageWidth: 158,
+                      imageHeight: 152,
+                      imageTop: 170,
+                      title: '영어로 쓰는 나의 하루를\n편지에 담아보세요',
+                      subtitle: '짧아도 틀려도 괜찮아요\nJolly가 서툰 영어도 다정하게 고쳐줄 거예요',
+                    ),
+                    _buildPage(
+                      imagePath: 'assets/images/img_onboarding2.png',
+                      imageWidth: 295,
+                      imageHeight: 82,
+                      imageTop: 234,
+                      title: 'Jolly에게 편지를 쓰면\n나만의 우표가 생겨요',
+                      subtitle: '달콤한 하루도, 힘든 순간도\n편지에 담긴 이야기마다 다른 우표가 생겨요',
+                    ),
+                    _buildPage(
+                      imagePath: 'assets/images/img_page_writefinish.png',
+                      imageWidth: 165,
+                      imageHeight: 150,
+                      imageTop: 178,
+                      title: '준비가 됐다면 이제\nJolly를 만나러 가볼까요?',
+                      subtitle: '첫 편지를 Jolly에게 건네보세요\n당신만의 영어 편지 일기가 시작돼요',
+                    ),
+                  ],
+                ),
+                Positioned(
+                  top: 588,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: PageStepper(
+                      totalSteps: 3,
+                      currentStep: _currentPage,
+                    ),
                   ),
-                  _buildPage(
-                    imagePath: 'assets/images/img_onboarding2.png',
-                    title: '검토가 완료되면\n우표가 도착해요',
-                    subtitle: '다양한 우표를 모아보세요',
+                ),
+                if (_currentPage == 2)
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    bottom: 29,
+                    child: JollyButton(
+                      text: 'Jolly 만나러 가기',
+                      onPressed: () => context.go('/home'),
+                    ),
                   ),
-                  _buildPage(
-                    imagePath: 'assets/images/img_seal.png',
-                    title: 'Dear Jolly와 함께\n영어 편지를 시작해볼까요?',
-                    subtitle: '',
-                  ),
-                ],
-              ),
+              ],
             ),
-            // Page indicator
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: PageStepper(
-                totalSteps: 3,
-                currentStep: _currentPage,
-              ),
-            ),
-            // Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: JollyButton(
-                text: _currentPage < 2 ? '다음' : '시작하기',
-                onPressed: () {
-                  if (_currentPage < 2) {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  } else {
-                    context.go('/home');
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 34),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildPage({
     required String imagePath,
+    required double imageWidth,
+    required double imageHeight,
+    required double imageTop,
     required String title,
     required String subtitle,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            imagePath,
-            height: 200,
-            errorBuilder: (_, __, ___) => const SizedBox(height: 200),
+    return Stack(
+      children: [
+        Positioned(
+          top: imageTop,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              width: imageWidth,
+              height: imageHeight,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) =>
+                  SizedBox(width: imageWidth, height: imageHeight),
+            ),
           ),
-          const SizedBox(height: 40),
-          Text(
+        ),
+        Positioned(
+          top: 352,
+          left: 24,
+          right: 24,
+          child: Text(
             title,
             textAlign: TextAlign.center,
-            style: AppTextTheme.head1B22.copyWith(color: AppColors.gray900),
+            style: AppTextTheme.head4Sb20.copyWith(color: AppColors.gray900),
           ),
-          if (subtitle.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: AppTextTheme.body6Md15.copyWith(color: AppColors.gray600),
-            ),
-          ],
-        ],
-      ),
+        ),
+        Positioned(
+          top: 416,
+          left: 24,
+          right: 24,
+          child: Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: AppTextTheme.body6Md15.copyWith(color: AppColors.gray600),
+          ),
+        ),
+      ],
     );
   }
 }
