@@ -16,23 +16,17 @@ import '../features/write/view/write_letter_screen.dart';
 final router = GoRouter(
   initialLocation: '/splash',
   routes: [
-    GoRoute(
-      path: '/splash',
-      builder: (_, _) => const SplashScreen(),
-    ),
+    GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
     GoRoute(
       path: '/login',
       pageBuilder: (_, _) => CustomTransitionPage(
         child: const LoginScreen(),
-        transitionsBuilder: (_, animation, __, child) =>
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
             FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 500),
       ),
     ),
-    GoRoute(
-      path: '/onboarding/terms',
-      builder: (_, _) => const TermsScreen(),
-    ),
+    GoRoute(path: '/onboarding/terms', builder: (_, _) => const TermsScreen()),
     GoRoute(
       path: '/onboarding/nickname',
       builder: (_, _) => const NicknameScreen(),
@@ -41,26 +35,19 @@ final router = GoRouter(
       path: '/onboarding/welcome',
       builder: (_, _) => const WelcomeScreen(),
     ),
-    GoRoute(
-      path: '/home',
-      builder: (_, _) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/write',
-      builder: (_, _) => const WriteLetterScreen(),
-    ),
+    GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+    GoRoute(path: '/write', builder: (_, _) => const WriteLetterScreen()),
     GoRoute(
       path: '/write/complete',
       builder: (_, _) => const WriteCompleteScreen(),
     ),
+    GoRoute(path: '/review', redirect: (_, _) => '/home'),
     GoRoute(
-      path: '/review',
-      builder: (_, _) => const ReviewScreen(),
+      path: '/review/:letterId',
+      builder: (_, state) =>
+          ReviewScreen(letterId: int.parse(state.pathParameters['letterId']!)),
     ),
-    GoRoute(
-      path: '/settings',
-      builder: (_, _) => const SettingsScreen(),
-    ),
+    GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
     GoRoute(
       path: '/settings/name',
       builder: (_, _) => const ChangeNameScreen(),
