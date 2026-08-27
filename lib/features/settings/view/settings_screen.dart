@@ -1,132 +1,139 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
 import '../../../core/widgets/jolly_dialog.dart';
+import '../../../core/widgets/jolly_toast.dart';
+import '../../../domain/entity/user.dart';
+import '../../../domain/model/result.dart';
+import '../../../domain/usecase/auth/delete_account_usecase.dart';
+import '../../../domain/usecase/auth/get_user_usecase.dart';
+import '../../../domain/usecase/auth/logout_usecase.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  User? _user;
+  bool _isLoading = true;
+  bool _isWorking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.ivory100,
+      backgroundColor: AppColors.white,
       appBar: JollyAppBar(
         title: '설정',
         onBack: () => context.pop(),
+        backgroundColor: AppColors.white,
+        showBottomBorder: true,
       ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 8),
-          // Profile section
-          _buildSection(
-            title: '프로필',
-            children: [
-              _buildSettingItem(
-                label: '이름 변경',
-                onTap: () => context.push('/settings/name'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Account section
-          _buildSection(
-            title: '계정',
-            children: [
-              _buildSettingItem(
-                label: '로그인 정보',
-                trailing: Text(
-                  '카카오',
-                  style: AppTextTheme.body9Md14.copyWith(
-                    color: AppColors.gray500,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      _AccountInfoRow(
+                        icon: Image.asset(
+                          'assets/images/img_mini_letter.png',
+                          width: 20,
+                          height: 20,
+                        ),
+                        text: _user?.nickname ?? '닉네임 미등록',
+                        buttonText: '변경하기',
+                        onButtonTap: _isWorking
+                            ? null
+                            : () async {
+                                await context.push('/settings/name');
+                                if (mounted) {
+                                  _loadUser();
+                                }
+                              },
+                      ),
+                      const SizedBox(height: 30),
+                      _AccountInfoRow(
+                        icon: _providerIcon(),
+                        text: _accountText(),
+                        buttonText: '로그아웃',
+                        onButtonTap: _isWorking
+                            ? null
+                            : () => _showLogoutDialog(context),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              _buildSettingItem(
-                label: '로그아웃',
-                onTap: () => _showLogoutDialog(context),
-              ),
-              _buildSettingItem(
-                label: '회원 탈퇴',
-                onTap: () => _showDeleteAccountDialog(context),
-                textColor: AppColors.red,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // App info section
-          _buildSection(
-            title: '앱 정보',
-            children: [
-              _buildSettingItem(
-                label: '버전',
-                trailing: Text(
-                  '1.0.0',
-                  style: AppTextTheme.body9Md14.copyWith(
-                    color: AppColors.gray500,
+                const SizedBox(height: 24),
+                Container(height: 8, color: AppColors.gray100),
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      _SettingsMenuItem(
+                        label: '공지사항',
+                        onTap: () {},
+                        showMore: true,
+                      ),
+                      const SizedBox(height: 40),
+                      _SettingsMenuItem(
+                        label: '개인정보처리방침',
+                        onTap: () {},
+                        showMore: true,
+                      ),
+                      const SizedBox(height: 40),
+                      _SettingsMenuItem(
+                        label: '회원탈퇴',
+                        onTap: _isWorking
+                            ? null
+                            : () => _showDeleteAccountDialog(context),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              _buildSettingItem(
-                label: '이용약관',
-                onTap: () {},
-              ),
-              _buildSettingItem(
-                label: '개인정보 처리방침',
-                onTap: () {},
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          child: Text(
-            title,
-            style: AppTextTheme.detail6Md12.copyWith(color: AppColors.gray500),
-          ),
-        ),
-        ...children,
-      ],
-    );
-  }
-
-  Widget _buildSettingItem({
-    required String label,
-    VoidCallback? onTap,
-    Widget? trailing,
-    Color? textColor,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Row(
-          children: [
-            Text(
-              label,
-              style: AppTextTheme.body3Md16.copyWith(
-                color: textColor ?? AppColors.gray900,
-              ),
+                const SizedBox(height: 64),
+                Text(
+                  '현재 버전 1.0.0 (MVP)',
+                  style: AppTextTheme.detail3Md13.copyWith(
+                    color: AppColors.gray300,
+                  ),
+                ),
+              ],
             ),
-            const Spacer(),
-            if (trailing != null) trailing,
-          ],
-        ),
-      ),
     );
+  }
+
+  Future<void> _loadUser() async {
+    final result = await locator<GetUserUseCase>().execute();
+    if (!mounted) return;
+
+    switch (result) {
+      case Success(data: final user):
+        setState(() {
+          _user = user;
+          _isLoading = false;
+        });
+      case Failure(message: final message):
+        setState(() => _isLoading = false);
+        JollyToast.show(context, message: message);
+    }
   }
 
   void _showLogoutDialog(BuildContext context) async {
@@ -136,7 +143,10 @@ class SettingsScreen extends StatelessWidget {
       confirmText: '로그아웃',
     );
     if (confirmed == true && context.mounted) {
-      context.go('/login');
+      await _runAccountAction(
+        action: () => locator<LogoutUseCase>().execute(),
+        onSuccess: () => context.go('/login'),
+      );
     }
   }
 
@@ -149,8 +159,126 @@ class SettingsScreen extends StatelessWidget {
       confirmColor: AppColors.red,
     );
     if (confirmed == true && context.mounted) {
-      // TODO: Delete account API call
-      context.go('/login');
+      await _runAccountAction(
+        action: () => locator<DeleteAccountUseCase>().execute(),
+        onSuccess: () => context.go('/login'),
+      );
     }
+  }
+
+  Future<void> _runAccountAction({
+    required Future<Result<void>> Function() action,
+    required VoidCallback onSuccess,
+  }) async {
+    setState(() => _isWorking = true);
+    final result = await action();
+    if (!mounted) return;
+    setState(() => _isWorking = false);
+
+    switch (result) {
+      case Success():
+        onSuccess();
+      case Failure(message: final message):
+        JollyToast.show(context, message: message);
+    }
+  }
+
+  Widget _providerIcon() {
+    final iconPath = _user?.loginProvider == LoginProvider.apple
+        ? 'assets/icons/ic_apple.svg'
+        : 'assets/icons/ic_kakao.svg';
+    return SvgPicture.asset(iconPath, width: 20, height: 20);
+  }
+
+  String _accountText() {
+    final email = _user?.email;
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+    return _user?.loginProvider == LoginProvider.apple ? 'Apple 계정' : '카카오 계정';
+  }
+}
+
+class _AccountInfoRow extends StatelessWidget {
+  final Widget icon;
+  final String text;
+  final String buttonText;
+  final VoidCallback? onButtonTap;
+
+  const _AccountInfoRow({
+    required this.icon,
+    required this.text,
+    required this.buttonText,
+    required this.onButtonTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        icon,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextTheme.body3Md16.copyWith(color: AppColors.black),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        GestureDetector(
+          onTap: onButtonTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.gray100,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              buttonText,
+              style: AppTextTheme.body9Md14.copyWith(color: AppColors.gray700),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsMenuItem extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+  final bool showMore;
+
+  const _SettingsMenuItem({
+    required this.label,
+    this.onTap,
+    this.showMore = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 22,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextTheme.body3Md16.copyWith(color: AppColors.black),
+              ),
+            ),
+            if (showMore)
+              SvgPicture.asset(
+                'assets/icons/ic_more_lg.svg',
+                width: 18,
+                height: 18,
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
