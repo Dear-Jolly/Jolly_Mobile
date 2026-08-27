@@ -6,6 +6,7 @@ class AppColors {
   // Ivory
   static const Color ivory100 = Color(0xFFFBF9F4);
   static const Color ivory200 = Color(0xFFF5EDE0);
+  static const Color paperLine = Color(0xFFF5F3EB);
 
   // Gray Scale
   static const Color black = Color(0xFF010101);
