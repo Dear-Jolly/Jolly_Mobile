@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
+import '../config/api_config.dart';
 import '../storage/secure_storage.dart';
 import 'auth_interceptor.dart';
 
@@ -7,10 +9,9 @@ class DioClient {
   static Dio create({SecureStorage? secureStorage}) {
     final dio = Dio(
       BaseOptions(
-        // TODO: 실제 API base URL로 변경
-        baseUrl: 'https://api.example.com/api/v1',
+        baseUrl: ApiConfig.baseUrl,
         connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 30),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -19,15 +20,20 @@ class DioClient {
     );
 
     if (secureStorage != null) {
-      dio.interceptors.add(AuthInterceptor(secureStorage));
+      dio.interceptors.add(
+        AuthInterceptor(
+          dio: dio,
+          secureStorage: secureStorage,
+          refreshDio: Dio(BaseOptions(baseUrl: ApiConfig.baseUrl)),
+        ),
+      );
     }
 
-    dio.interceptors.add(
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-      ),
-    );
+    if (kDebugMode) {
+      dio.interceptors.add(
+        LogInterceptor(requestBody: true, responseBody: false),
+      );
+    }
 
     return dio;
   }

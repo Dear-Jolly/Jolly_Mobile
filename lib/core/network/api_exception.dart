@@ -14,14 +14,17 @@ class ApiException implements Exception {
         return ApiException('연결 시간이 초과되었습니다.');
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
-        final message = switch (statusCode) {
-          400 => '잘못된 요청입니다.',
-          401 => '인증이 필요합니다.',
-          403 => '접근이 거부되었습니다.',
-          404 => '요청한 리소스를 찾을 수 없습니다.',
-          500 => '서버 오류가 발생했습니다.',
-          _ => '오류가 발생했습니다. ($statusCode)',
-        };
+        final serverMessage = _messageFromResponse(e.response?.data);
+        final message =
+            serverMessage ??
+            switch (statusCode) {
+              400 => '잘못된 요청입니다.',
+              401 => '인증이 필요합니다.',
+              403 => '접근이 거부되었습니다.',
+              404 => '요청한 리소스를 찾을 수 없습니다.',
+              500 => '서버 오류가 발생했습니다.',
+              _ => '오류가 발생했습니다. ($statusCode)',
+            };
         return ApiException(message, statusCode: statusCode);
       case DioExceptionType.cancel:
         return ApiException('요청이 취소되었습니다.');
@@ -34,4 +37,11 @@ class ApiException implements Exception {
 
   @override
   String toString() => message;
+
+  static String? _messageFromResponse(Object? data) {
+    if (data is Map && data['message'] is String) {
+      return data['message'] as String;
+    }
+    return null;
+  }
 }
