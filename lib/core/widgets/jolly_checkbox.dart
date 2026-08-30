@@ -62,27 +62,30 @@ class JollyCheckbox extends StatelessWidget {
   Widget _buildItem() {
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        height: 36,
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: AppTextTheme.body6Md15.copyWith(
-                  color: AppColors.gray900,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8, right: 16),
+        child: SizedBox(
+          height: 24,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextTheme.body6Md15.copyWith(
+                    color: AppColors.gray900,
+                  ),
                 ),
               ),
-            ),
-            trailing ??
-                SvgPicture.asset(
-                  isChecked
-                      ? 'assets/icons/ic_checkbox_selected.svg'
-                      : 'assets/icons/ic_checkbox.svg',
-                  width: 24,
-                  height: 24,
-                ),
-          ],
+              trailing ??
+                  SvgPicture.asset(
+                    isChecked
+                        ? 'assets/icons/ic_checkbox_selected.svg'
+                        : 'assets/icons/ic_checkbox.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+            ],
+          ),
         ),
       ),
     );

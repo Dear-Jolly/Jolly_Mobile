@@ -15,40 +15,64 @@ class SocialLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isKakao = type == SocialLoginType.kakao;
+    final foregroundColor = isKakao ? AppColors.kakaoBrown : AppColors.white;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isKakao
-              ? AppColors.kakaoYellow
-              : AppColors.appleBlack,
-          foregroundColor: isKakao ? AppColors.kakaoBrown : AppColors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-              isKakao
-                  ? 'assets/icons/ic_kakao.svg'
-                  : 'assets/icons/ic_apple.svg',
-              width: isKakao ? 16 : 15,
-              height: 15,
+    return Opacity(
+      opacity: onPressed == null ? 0.6 : 1,
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: Material(
+          color: isKakao ? AppColors.kakaoYellow : AppColors.appleBlack,
+          borderRadius: BorderRadius.circular(4),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _SocialLoginIcon(type: type),
+                const SizedBox(width: 10),
+                Text(
+                  isKakao ? '카카오로 로그인' : 'Apple로 로그인',
+                  style: AppTextTheme.body2Sb16.copyWith(
+                    color: foregroundColor,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Text(
-              isKakao ? '카카오로 로그인' : 'Apple로 로그인',
-              style: AppTextTheme.body2Sb16.copyWith(
-                color: isKakao ? AppColors.kakaoBrown : AppColors.white,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+}
+
+class _SocialLoginIcon extends StatelessWidget {
+  final SocialLoginType type;
+
+  const _SocialLoginIcon({required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (type) {
+      SocialLoginType.kakao => SvgPicture.asset(
+        'assets/icons/ic_kakao.svg',
+        width: 16,
+        height: 15,
+      ),
+      SocialLoginType.apple => Image.asset(
+        'assets/icons/ic_apple_login.png',
+        width: 15,
+        height: 15,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => SvgPicture.asset(
+          'assets/icons/ic_apple.svg',
+          width: 15,
+          height: 15,
+          colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+        ),
+      ),
+    };
   }
 }

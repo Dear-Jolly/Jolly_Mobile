@@ -1,4 +1,8 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="ic_checkbox">
 <rect x="0.5" y="0.5" width="23" height="23" rx="2.5" fill="white"/>
 <rect x="0.5" y="0.5" width="23" height="23" rx="2.5" stroke="#C4C4C4"/>
+<g id="Vector 62">
+</g>
+</g>
 </svg>
