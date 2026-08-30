@@ -143,8 +143,10 @@ class _ReviewResultCard extends StatelessWidget {
           const SizedBox(height: 28),
           if (review.hasFeedback && review.tips.isNotEmpty)
             ReviewTip(tips: review.tips)
+          else if (review.hasFeedback)
+            const _NoReviewTipBox()
           else
-            _PendingFeedbackBox(hasFeedback: review.hasFeedback),
+            const _PendingFeedbackBox(),
         ],
       ),
     );
@@ -181,32 +183,121 @@ class _ReviewedLetterText extends StatelessWidget {
 
       return TextSpan(
         children: [
-          TextSpan(
-            text: segment.originalText,
-            style: baseStyle.copyWith(
-              color: AppColors.red,
-              decoration: TextDecoration.lineThrough,
-              decorationColor: AppColors.red,
-            ),
-          ),
-          if (segment.correctedText.isNotEmpty)
-            TextSpan(
-              text: segment.correctedText,
-              style: baseStyle.copyWith(
-                color: AppColors.green200,
-                backgroundColor: AppColors.green100,
-              ),
-            ),
+          ..._buildOriginalTextSpans(segment.originalText, baseStyle),
+          ..._buildCorrectedTextSpans(segment.correctedText, baseStyle),
         ],
       );
     }).toList();
   }
+
+  List<InlineSpan> _buildOriginalTextSpans(String text, TextStyle baseStyle) {
+    final parts = _TextRunParts.from(text);
+    if (!parts.hasContent) {
+      return [TextSpan(text: text)];
+    }
+
+    return [
+      if (parts.leadingWhitespace.isNotEmpty)
+        TextSpan(text: parts.leadingWhitespace),
+      TextSpan(
+        text: parts.content,
+        style: baseStyle.copyWith(
+          color: AppColors.red,
+          decoration: TextDecoration.lineThrough,
+          decorationColor: AppColors.red,
+        ),
+      ),
+      if (parts.trailingWhitespace.isNotEmpty)
+        TextSpan(text: parts.trailingWhitespace),
+    ];
+  }
+
+  List<InlineSpan> _buildCorrectedTextSpans(String text, TextStyle baseStyle) {
+    if (text.isEmpty) {
+      return const [];
+    }
+
+    final parts = _TextRunParts.from(text);
+    if (!parts.hasContent) {
+      return [TextSpan(text: text)];
+    }
+
+    return [
+      if (parts.leadingWhitespace.isNotEmpty)
+        TextSpan(text: parts.leadingWhitespace),
+      WidgetSpan(
+        alignment: PlaceholderAlignment.baseline,
+        baseline: TextBaseline.alphabetic,
+        child: _CorrectionTextBadge(
+          text: parts.content,
+          textStyle: baseStyle.copyWith(height: 1.4),
+          addLeadingGap: parts.leadingWhitespace.isEmpty,
+        ),
+      ),
+      if (parts.trailingWhitespace.isNotEmpty)
+        TextSpan(text: parts.trailingWhitespace),
+    ];
+  }
+}
+
+class _CorrectionTextBadge extends StatelessWidget {
+  final String text;
+  final TextStyle textStyle;
+  final bool addLeadingGap;
+
+  const _CorrectionTextBadge({
+    required this.text,
+    required this.textStyle,
+    required this.addLeadingGap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(left: addLeadingGap ? 4 : 0),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: AppColors.green100,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(text, style: textStyle.copyWith(color: AppColors.green200)),
+    );
+  }
+}
+
+class _TextRunParts {
+  final String leadingWhitespace;
+  final String content;
+  final String trailingWhitespace;
+
+  const _TextRunParts({
+    required this.leadingWhitespace,
+    required this.content,
+    required this.trailingWhitespace,
+  });
+
+  bool get hasContent => content.isNotEmpty;
+
+  factory _TextRunParts.from(String text) {
+    final leadingWhitespace = RegExp(r'^\s+').firstMatch(text)?.group(0) ?? '';
+    final remaining = text.substring(leadingWhitespace.length);
+    final trailingWhitespace =
+        RegExp(r'\s+$').firstMatch(remaining)?.group(0) ?? '';
+    final contentStart = leadingWhitespace.length;
+    final contentEnd = text.length - trailingWhitespace.length;
+
+    return _TextRunParts(
+      leadingWhitespace: leadingWhitespace,
+      content: contentStart < contentEnd
+          ? text.substring(contentStart, contentEnd)
+          : '',
+      trailingWhitespace: trailingWhitespace,
+    );
+  }
 }
 
 class _PendingFeedbackBox extends StatelessWidget {
-  final bool hasFeedback;
-
-  const _PendingFeedbackBox({required this.hasFeedback});
+  const _PendingFeedbackBox();
 
   @override
   Widget build(BuildContext context) {
@@ -218,8 +309,28 @@ class _PendingFeedbackBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        hasFeedback ? '아직 표시할 팁이 없어요.' : 'Jolly가 편지를 검토하고 있어요.',
+        'Jolly가 편지를 검토하고 있어요.',
         style: AppTextTheme.body6Md15.copyWith(color: AppColors.gray900),
+      ),
+    );
+  }
+}
+
+class _NoReviewTipBox extends StatelessWidget {
+  const _NoReviewTipBox();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.ivory100,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '고칠 부분이 없어요!',
+        style: AppTextTheme.body6Md15.copyWith(color: AppColors.gray500),
       ),
     );
   }

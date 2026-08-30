@@ -140,6 +140,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirmed = await JollyDialog.show(
       context,
       title: '로그아웃 하시겠어요?',
+      subtitle: '편지는 잘 보관해 둘게요. 언제든 다시 와요!',
+      cancelText: '취소',
       confirmText: '로그아웃',
     );
     if (confirmed == true && context.mounted) {
@@ -153,8 +155,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showDeleteAccountDialog(BuildContext context) async {
     final confirmed = await JollyDialog.show(
       context,
-      title: '정말 탈퇴하시겠어요?',
-      subtitle: '탈퇴 시 모든 데이터가 삭제되며\n복구할 수 없습니다.',
+      title: '서비스를 탈퇴하시겠어요?',
+      subtitle: '탈퇴하면 모든 편지와 계정 정보가 함께 삭제되며\n다시 복구할 수 없어요.',
+      cancelText: '취소',
       confirmText: '탈퇴하기',
       confirmColor: AppColors.red,
     );

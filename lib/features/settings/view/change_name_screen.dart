@@ -21,6 +21,7 @@ class ChangeNameScreen extends StatefulWidget {
 
 class _ChangeNameScreenState extends State<ChangeNameScreen> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
   String? _errorText;
   bool _isValid = false;
   bool _isSubmitting = false;
@@ -29,11 +30,17 @@ class _ChangeNameScreenState extends State<ChangeNameScreen> {
   void initState() {
     super.initState();
     _controller.addListener(_validate);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -48,37 +55,57 @@ class _ChangeNameScreenState extends State<ChangeNameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.white,
       appBar: JollyAppBar(
         onBack: () => context.pop(),
         backgroundColor: AppColors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            Text(
-              '변경할 이름을 입력해주세요',
-              style: AppTextTheme.head4Sb20.copyWith(color: AppColors.gray900),
-            ),
-            const SizedBox(height: 28),
-            JollyTextField(
-              controller: _controller,
-              hintText: '이름을 입력해주세요',
-              errorText: _errorText,
-              helperText: '공백,특수기호,한글 없이 작성해주세요',
-              counterText: '${_controller.text.length}/20',
-              maxLength: 20,
-            ),
-            const SizedBox(height: 207),
-            JollyButton(
-              text: _isSubmitting ? '처리 중' : '변경하기',
-              enabled: _isValid && !_isSubmitting,
-              onPressed: _submitNickname,
-            ),
-          ],
+      body: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        Text(
+                          '변경할 이름을 입력해주세요',
+                          style: AppTextTheme.head4Sb20.copyWith(
+                            color: AppColors.gray900,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        JollyTextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          hintText: '이름을 입력해주세요',
+                          errorText: _errorText,
+                          helperText: '공백,특수기호,한글 없이 작성해주세요',
+                          counterText: '${_controller.text.length}/20',
+                          maxLength: 20,
+                        ),
+                        const Spacer(),
+                        JollyButton(
+                          text: '변경하기',
+                          enabled: _isValid && !_isSubmitting,
+                          onPressed: _submitNickname,
+                        ),
+                        const SizedBox(height: 29),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

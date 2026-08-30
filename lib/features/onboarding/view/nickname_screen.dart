@@ -76,7 +76,7 @@ class _NicknameScreenState extends State<NicknameScreen> {
                   ),
                   const Spacer(),
                   JollyButton(
-                    text: _isSubmitting ? '처리 중' : '다음',
+                    text: '다음',
                     enabled: _isValid && !_isSubmitting,
                     onPressed: _submitNickname,
                   ),

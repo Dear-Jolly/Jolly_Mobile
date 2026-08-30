@@ -12,6 +12,8 @@ class JollyTextField extends StatelessWidget {
   final String? counterText;
   final bool showClearButton;
   final int? maxLength;
+  final FocusNode? focusNode;
+  final bool autofocus;
   final ValueChanged<String>? onChanged;
 
   const JollyTextField({
@@ -23,6 +25,8 @@ class JollyTextField extends StatelessWidget {
     this.counterText,
     this.showClearButton = true,
     this.maxLength,
+    this.focusNode,
+    this.autofocus = false,
     this.onChanged,
   });
 
@@ -47,6 +51,8 @@ class JollyTextField extends StatelessWidget {
       children: [
         TextField(
           controller: controller,
+          focusNode: focusNode,
+          autofocus: autofocus,
           maxLength: maxLength,
           buildCounter: maxLength == null ? null : hiddenCounter,
           onChanged: onChanged,

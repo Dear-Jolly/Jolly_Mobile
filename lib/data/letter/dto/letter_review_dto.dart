@@ -54,7 +54,8 @@ class LetterReviewDto {
       correctedContent:
           feedback?['correctedContent'] as String? ?? letter.content,
       tips: (feedback?['tips'] as List<dynamic>? ?? [])
-          .map((e) => e as String)
+          .whereType<String>()
+          .where((tip) => tip.trim().isNotEmpty)
           .toList(),
       correctionSegments: segments,
     );
