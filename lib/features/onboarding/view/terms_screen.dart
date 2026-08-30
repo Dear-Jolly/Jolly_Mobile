@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
-import '../../../core/widgets/check_pattern.dart';
+import '../../../core/widgets/intro_pattern_background.dart';
 import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_checkbox.dart';
 import '../../../core/widgets/jolly_toast.dart';
@@ -63,7 +63,7 @@ class _TermsScreenState extends State<TermsScreen> {
       backgroundColor: AppColors.ivory100,
       body: Stack(
         children: [
-          const CheckPattern(),
+          const Positioned.fill(child: IntroPatternBackground()),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -71,10 +71,13 @@ class _TermsScreenState extends State<TermsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 50),
-                  Text(
-                    '서비스 이용을 위해\n약관에 동의해주세요',
-                    style: AppTextTheme.head1B22.copyWith(
-                      color: AppColors.gray900,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      '서비스 이용을 위해\n약관에 동의해주세요',
+                      style: AppTextTheme.head1B22.copyWith(
+                        color: AppColors.gray900,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -84,19 +87,19 @@ class _TermsScreenState extends State<TermsScreen> {
                     onTap: _toggleAll,
                     isAllAgree: true,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   JollyCheckbox(
                     label: '[필수] 서비스 이용약관 동의',
                     isChecked: _termsAgreed,
                     onTap: _toggleTerms,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 24),
                   JollyCheckbox(
                     label: '[필수] 개인정보 처리방침 동의',
                     isChecked: _privacyAgreed,
                     onTap: _togglePrivacy,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 24),
                   JollyCheckbox(
                     label: '[선택] 마케팅 정보 수신 동의',
                     isChecked: _marketingAgreed,
@@ -104,7 +107,7 @@ class _TermsScreenState extends State<TermsScreen> {
                   ),
                   const Spacer(),
                   JollyButton(
-                    text: _isSubmitting ? '처리 중' : '다음',
+                    text: '다음',
                     enabled: _canProceed && !_isSubmitting,
                     onPressed: _submitTerms,
                   ),

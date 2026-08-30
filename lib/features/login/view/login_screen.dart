@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/config/api_config.dart';
 import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/check_pattern.dart';
+import '../../../core/widgets/intro_pattern_background.dart';
+import '../../../core/widgets/intro_splash_logo.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/social_login_button.dart';
 import '../../../domain/entity/user.dart';
@@ -28,6 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
   StreamSubscription<Uri>? _linkSubscription;
   SocialLoginType? _loadingType;
 
+  static const _figmaFrameHeight = IntroSplashLogo.referenceFrameHeight;
+  static const _buttonHeight = 52.0;
+  static const _kakaoButtonTopIos = 633.0;
+  static const _appleButtonTopIos = 697.0;
+  static const _kakaoButtonTopAos = 697.0;
+  static const _horizontalPadding = 24.0;
+
   bool get _isLoading => _loadingType != null;
 
   @override
@@ -46,51 +56,58 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.ivory100,
-      body: Stack(
-        children: [
-          const CheckPattern(),
-          Positioned(
-            left: 38,
-            top: 140,
-            child: Image.asset(
-              'assets/images/img_splash_logo.png',
-              width: 277,
-              height: 369,
-            ),
-          ),
-          Positioned(
-            left: 24,
-            right: 24,
-            bottom: Platform.isIOS ? 95 : 31,
-            child: SocialLoginButton(
-              type: SocialLoginType.kakao,
-              onPressed: _isLoading
-                  ? null
-                  : () => _startSocialLogin(SocialLoginType.kakao),
-            ),
-          ),
-          if (Platform.isIOS)
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 31,
-              child: SocialLoginButton(
-                type: SocialLoginType.apple,
-                onPressed: _isLoading
-                    ? null
-                    : () => _startSocialLogin(SocialLoginType.apple),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              const Positioned.fill(child: IntroPatternBackground()),
+              const Positioned.fill(child: IntroSplashLogo()),
+              Positioned(
+                left: _horizontalPadding,
+                right: _horizontalPadding,
+                top: _buttonTop(
+                  constraints,
+                  Platform.isIOS ? _kakaoButtonTopIos : _kakaoButtonTopAos,
+                ),
+                child: SocialLoginButton(
+                  type: SocialLoginType.kakao,
+                  onPressed: _isLoading
+                      ? null
+                      : () => _startSocialLogin(SocialLoginType.kakao),
+                ),
               ),
-            ),
-          if (_isLoading)
-            const Positioned.fill(
-              child: ColoredBox(
-                color: Color(0x33000000),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-        ],
+              if (Platform.isIOS)
+                Positioned(
+                  left: _horizontalPadding,
+                  right: _horizontalPadding,
+                  top: _buttonTop(constraints, _appleButtonTopIos),
+                  child: SocialLoginButton(
+                    type: SocialLoginType.apple,
+                    onPressed: _isLoading
+                        ? null
+                        : () => _startSocialLogin(SocialLoginType.apple),
+                  ),
+                ),
+              if (_isLoading)
+                const Positioned.fill(
+                  child: ColoredBox(
+                    color: Color(0x33000000),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  double _buttonTop(BoxConstraints constraints, double figmaTop) {
+    final screenHeight = constraints.maxHeight;
+    final maxTop = math.max(0.0, screenHeight - _buttonHeight - 29);
+    return (screenHeight * figmaTop / _figmaFrameHeight)
+        .clamp(0.0, maxTop)
+        .toDouble();
   }
 
   Future<void> _listenForAuthCallback() async {
@@ -164,6 +181,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool _isAuthCallback(Uri uri) {
+    if (uri.scheme != ApiConfig.authCallbackScheme) {
+      return false;
+    }
+
     final params = uri.queryParameters;
     return params.containsKey('accessToken') &&
         params.containsKey('refreshToken');
