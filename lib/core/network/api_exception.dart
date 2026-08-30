@@ -3,8 +3,9 @@ import 'package:dio/dio.dart';
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
+  final String? code;
 
-  ApiException(this.message, {this.statusCode});
+  ApiException(this.message, {this.statusCode, this.code});
 
   factory ApiException.fromDioException(DioException e) {
     switch (e.type) {
@@ -15,6 +16,7 @@ class ApiException implements Exception {
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
         final serverMessage = _messageFromResponse(e.response?.data);
+        final serverCode = _codeFromResponse(e.response?.data);
         final message =
             serverMessage ??
             switch (statusCode) {
@@ -25,7 +27,7 @@ class ApiException implements Exception {
               500 => '서버 오류가 발생했습니다.',
               _ => '오류가 발생했습니다. ($statusCode)',
             };
-        return ApiException(message, statusCode: statusCode);
+        return ApiException(message, statusCode: statusCode, code: serverCode);
       case DioExceptionType.cancel:
         return ApiException('요청이 취소되었습니다.');
       case DioExceptionType.connectionError:
@@ -41,6 +43,13 @@ class ApiException implements Exception {
   static String? _messageFromResponse(Object? data) {
     if (data is Map && data['message'] is String) {
       return data['message'] as String;
+    }
+    return null;
+  }
+
+  static String? _codeFromResponse(Object? data) {
+    if (data is Map && data['code'] is String) {
+      return data['code'] as String;
     }
     return null;
   }

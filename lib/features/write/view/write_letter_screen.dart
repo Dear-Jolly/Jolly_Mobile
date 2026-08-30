@@ -22,7 +22,7 @@ class WriteLetterScreen extends StatefulWidget {
 
 class _WriteLetterScreenState extends State<WriteLetterScreen> {
   final _contentController = TextEditingController();
-  bool _showKoreanWarning = false;
+  bool _showEnglishWarning = false;
   bool _canSubmit = false;
   bool _isSubmitting = false;
 
@@ -40,12 +40,16 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
 
   void _checkContent() {
     final text = _contentController.text;
-    final hasKorean = RegExp(r'[가-힣ㄱ-ㅎㅏ-ㅣ]').hasMatch(text);
+    final characterCount = text.characters.length;
+    final hasUnsupportedCharacter = _hasUnsupportedCharacter(text);
     final canSubmit =
-        text.trim().isNotEmpty && !hasKorean && text.length <= 500;
-    if (hasKorean != _showKoreanWarning || canSubmit != _canSubmit) {
+        text.trim().isNotEmpty &&
+        !hasUnsupportedCharacter &&
+        characterCount <= 500;
+    if (hasUnsupportedCharacter != _showEnglishWarning ||
+        canSubmit != _canSubmit) {
       setState(() {
-        _showKoreanWarning = hasKorean;
+        _showEnglishWarning = hasUnsupportedCharacter;
         _canSubmit = canSubmit;
       });
     }
@@ -126,7 +130,7 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          '${_contentController.text.length}/500',
+                          '${_contentController.text.characters.length}/500',
                           style: AppTextTheme.detail3Md13.copyWith(
                             color: AppColors.gray400,
                           ),
@@ -136,7 +140,7 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
                   ),
                 ),
                 const Spacer(),
-                if (_showKoreanWarning)
+                if (_showEnglishWarning)
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -174,7 +178,7 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
     setState(() => _isSubmitting = true);
 
     final result = await locator<CreateLetterUseCase>().execute(
-      _contentController.text.trim(),
+      _contentController.text,
     );
 
     if (!mounted) return;
@@ -191,5 +195,30 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
   String _formattedDate() {
     final now = DateTime.now();
     return '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}';
+  }
+
+  bool _hasUnsupportedCharacter(String text) {
+    for (final rune in text.runes) {
+      if (_isAllowedAscii(rune) || _isEmojiRune(rune)) {
+        continue;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  bool _isAllowedAscii(int rune) {
+    return rune == 0x09 ||
+        rune == 0x0A ||
+        rune == 0x0D ||
+        (rune >= 0x20 && rune <= 0x7E);
+  }
+
+  bool _isEmojiRune(int rune) {
+    return rune == 0x200D ||
+        rune == 0x20E3 ||
+        rune == 0xFE0F ||
+        (rune >= 0x2600 && rune <= 0x27BF) ||
+        (rune >= 0x1F000 && rune <= 0x1FAFF);
   }
 }

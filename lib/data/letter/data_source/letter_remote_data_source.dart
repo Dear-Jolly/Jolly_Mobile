@@ -1,28 +1,31 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/config/api_config.dart';
+import '../../../core/platform/device_time_zone.dart';
 import '../dto/home_dto.dart';
 import '../dto/letter_dto.dart';
 import '../dto/letter_review_dto.dart';
 
 class LetterRemoteDataSource {
   final Dio _dio;
+  final DeviceTimeZone _deviceTimeZone;
 
-  const LetterRemoteDataSource(this._dio);
+  const LetterRemoteDataSource(this._dio, this._deviceTimeZone);
 
   Future<HomeDto> getHomeData() async {
     final response = await _dio.get('/home');
     return HomeDto.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<List<LetterDto>> getLetters() async {
+  Future<LetterListDto> getLetters({
+    required int page,
+    required int size,
+    required String sort,
+  }) async {
     final response = await _dio.get(
       '/letters',
-      queryParameters: {'page': 0, 'size': 100, 'sort': 'date,desc'},
+      queryParameters: {'page': page, 'size': size, 'sort': sort},
     );
-    return LetterListDto.fromJson(
-      response.data as Map<String, dynamic>,
-    ).letters;
+    return LetterListDto.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<LetterDto> getLetterDetail(int letterId) async {
@@ -32,12 +35,13 @@ class LetterRemoteDataSource {
 
   Future<LetterDto> createLetter(String content) async {
     final now = DateTime.now();
+    final timeZone = await _deviceTimeZone.currentIdentifier;
     final response = await _dio.post(
       '/letters',
       data: {
         'content': content,
         'writtenAt': _formatDateTime(now),
-        'timeZone': ApiConfig.defaultTimeZone,
+        'timeZone': timeZone,
       },
     );
     return LetterDto.fromCreateJson(

@@ -11,11 +11,24 @@ import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/letter_card.dart';
 import '../../../domain/entity/home_data.dart';
 import '../../../domain/entity/letter.dart';
+import '../../../domain/entity/letter_page.dart';
 import '../../../domain/model/result.dart';
 import '../../../domain/usecase/letter/get_home_data_usecase.dart';
 import '../../../domain/usecase/letter/get_letters_usecase.dart';
 
 enum SortOrder { recent, oldest }
+
+extension on SortOrder {
+  String get label => switch (this) {
+    SortOrder.recent => '최신순',
+    SortOrder.oldest => '오래된순',
+  };
+
+  LetterSortOrder get requestSort => switch (this) {
+    SortOrder.recent => LetterSortOrder.latest,
+    SortOrder.oldest => LetterSortOrder.oldest,
+  };
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,27 +38,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const _pageSize = 50;
+
+  final _scrollController = ScrollController();
+
   SortOrder _sortOrder = SortOrder.recent;
   HomeData? _homeData;
   List<Letter> _letters = [];
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasNext = false;
+  int _currentPage = 0;
   String? _errorMessage;
 
   int get _stampCount => _homeData?.totalStampCount ?? 0;
 
-  List<Letter> get _sortedLetters {
-    final letters = [..._letters];
-    letters.sort((a, b) {
-      final result = b.date.compareTo(a.date);
-      return _sortOrder == SortOrder.recent ? result : -result;
-    });
-    return letters;
-  }
-
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadHome();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -175,11 +193,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? SortOrder.oldest
                     : SortOrder.recent;
               });
+              _loadHome();
             },
             child: Row(
               children: [
                 Text(
-                  _sortOrder == SortOrder.recent ? '최신순' : '오래된순',
+                  _sortOrder.label,
                   style: AppTextTheme.detail6Md12.copyWith(
                     color: AppColors.gray600,
                   ),
@@ -265,39 +284,73 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLetterList() {
+    final itemCount = _letters.length + (_isLoadingMore ? 1 : 0);
+
     return ListView.separated(
+      controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 96),
-      itemCount: _sortedLetters.length,
+      itemCount: itemCount,
       separatorBuilder: (_, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final letter = _sortedLetters[index];
+        if (index >= _letters.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final letter = _letters[index];
         return LetterCard(
           letter: letter,
-          onTap: () => context.push('/review/${letter.id}'),
+          onTap: letter.hasFeedback
+              ? () => context.push('/review/${letter.id}')
+              : () => JollyToast.show(
+                  context,
+                  message: 'Jolly가 아직 편지를 검토하고 있어요.',
+                ),
         );
       },
     );
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 160) {
+      _loadMoreLetters();
+    }
   }
 
   Future<void> _loadHome() async {
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
+        _isLoadingMore = false;
         _errorMessage = null;
       });
     }
 
     final homeResult = await locator<GetHomeDataUseCase>().execute();
-    final lettersResult = await locator<GetLettersUseCase>().execute();
+    final lettersResult = await locator<GetLettersUseCase>().execute(
+      page: 0,
+      size: _pageSize,
+      sort: _sortOrder.requestSort,
+    );
 
     if (!mounted) return;
 
     if (homeResult is Success<HomeData> &&
-        lettersResult is Success<List<Letter>>) {
+        lettersResult is Success<LetterPage>) {
       setState(() {
         _homeData = homeResult.data;
-        _letters = lettersResult.data;
+        _letters = lettersResult.data.letters;
+        _hasNext = lettersResult.data.hasNext;
+        _currentPage = 0;
         _isLoading = false;
+        _isLoadingMore = false;
         _errorMessage = null;
       });
       return;
@@ -310,9 +363,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _isLoading = false;
+      _isLoadingMore = false;
       _errorMessage = message;
     });
     JollyToast.show(context, message: message);
+  }
+
+  Future<void> _loadMoreLetters() async {
+    if (_isLoading || _isLoadingMore || !_hasNext) {
+      return;
+    }
+
+    setState(() => _isLoadingMore = true);
+
+    final nextPage = _currentPage + 1;
+    final result = await locator<GetLettersUseCase>().execute(
+      page: nextPage,
+      size: _pageSize,
+      sort: _sortOrder.requestSort,
+    );
+
+    if (!mounted) return;
+
+    switch (result) {
+      case Success(data: final page):
+        setState(() {
+          _letters = [..._letters, ...page.letters];
+          _hasNext = page.hasNext;
+          _currentPage = nextPage;
+          _isLoadingMore = false;
+        });
+      case Failure(message: final message):
+        setState(() => _isLoadingMore = false);
+        JollyToast.show(context, message: message);
+    }
   }
 
   String? _failureMessage<T>(Result<T> result) {

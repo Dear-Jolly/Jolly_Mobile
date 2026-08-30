@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../domain/entity/home_data.dart';
 import '../../../domain/entity/letter.dart';
+import '../../../domain/entity/letter_page.dart';
 import '../../../domain/entity/letter_review.dart';
 import '../../../domain/model/result.dart';
 import '../../../domain/repository/letter_repository.dart';
@@ -26,10 +27,23 @@ class LetterRepositoryImpl implements LetterRepository {
   }
 
   @override
-  Future<Result<List<Letter>>> getLetters() async {
+  Future<Result<LetterPage>> getLetters({
+    required int page,
+    required int size,
+    required LetterSortOrder sort,
+  }) async {
     try {
-      final dtos = await _dataSource.getLetters();
-      return Success(dtos.map((e) => e.toEntity()).toList());
+      final dto = await _dataSource.getLetters(
+        page: page,
+        size: size,
+        sort: sort.apiValue,
+      );
+      return Success(
+        LetterPage(
+          letters: dto.letters.map((e) => e.toEntity()).toList(),
+          hasNext: dto.hasNext,
+        ),
+      );
     } on DioException catch (e) {
       return Failure(ApiException.fromDioException(e).message);
     } catch (e) {

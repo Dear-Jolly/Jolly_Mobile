@@ -191,7 +191,7 @@ class _ReviewedLetterText extends StatelessWidget {
           ),
           if (segment.correctedText.isNotEmpty)
             TextSpan(
-              text: ' ${segment.correctedText} ',
+              text: segment.correctedText,
               style: baseStyle.copyWith(
                 color: AppColors.green200,
                 backgroundColor: AppColors.green100,

@@ -25,6 +25,7 @@ class SecureStorage {
   Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
 
   Future<void> saveAuthSession(AuthSession session) async {
+    await clearAuthState();
     await saveAccessToken(session.accessToken);
     await saveRefreshToken(session.refreshToken);
     if (session.userId != null) {
@@ -46,11 +47,7 @@ class SecureStorage {
   Future<bool> getNicknameRegistered() async =>
       (await _storage.read(key: _nicknameRegisteredKey)) == 'true';
 
-  Future<void> clearTokens() async {
-    await _storage.delete(key: _accessTokenKey);
-    await _storage.delete(key: _refreshTokenKey);
-    await _storage.delete(key: _userIdKey);
-    await _storage.delete(key: _termsAgreedKey);
-    await _storage.delete(key: _nicknameRegisteredKey);
-  }
+  Future<void> clearTokens() => clearAuthState();
+
+  Future<void> clearAuthState() => _storage.deleteAll();
 }

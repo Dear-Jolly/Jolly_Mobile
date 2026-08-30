@@ -11,6 +11,15 @@ class ApiConfig {
     defaultValue: 'dearjolly',
   );
 
+  static const appVersion = String.fromEnvironment(
+    'JOLLY_APP_VERSION',
+    defaultValue: '1.0.0',
+  );
+
+  static const iosStoreUrl = String.fromEnvironment('JOLLY_IOS_STORE_URL');
+
+  static const androidStoreUrl = String.fromEnvironment('JOLLY_AOS_STORE_URL');
+
   static const defaultTimeZone = String.fromEnvironment(
     'JOLLY_TIME_ZONE',
     defaultValue: 'Asia/Seoul',

@@ -22,7 +22,7 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final token = await _secureStorage.getAccessToken();
-    if (token != null) {
+    if (token != null && !_isPublicRequest(options.path)) {
       options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
@@ -47,7 +47,7 @@ class AuthInterceptor extends Interceptor {
 
     final newAccessToken = await _refreshAccessToken();
     if (newAccessToken == null) {
-      await _secureStorage.clearTokens();
+      await _secureStorage.clearAuthState();
       handler.next(err);
       return;
     }
@@ -93,5 +93,9 @@ class AuthInterceptor extends Interceptor {
     } on DioException {
       return null;
     }
+  }
+
+  bool _isPublicRequest(String path) {
+    return path == '/version';
   }
 }

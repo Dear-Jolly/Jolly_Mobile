@@ -59,10 +59,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<void>> logout() async {
     try {
       await _dataSource.logout();
-      await _storage.clearTokens();
+      await _storage.clearAuthState();
       return const Success(null);
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      final exception = ApiException.fromDioException(e);
+      if (_shouldClearLocalAuth(exception)) {
+        await _storage.clearAuthState();
+        return const Success(null);
+      }
+      return Failure(exception.message);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -72,10 +77,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<void>> deleteAccount() async {
     try {
       await _dataSource.deleteAccount();
-      await _storage.clearTokens();
+      await _storage.clearAuthState();
       return const Success(null);
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      final exception = ApiException.fromDioException(e);
+      if (_shouldClearLocalAuth(exception)) {
+        await _storage.clearAuthState();
+        return const Success(null);
+      }
+      return Failure(exception.message);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -125,5 +135,9 @@ class AuthRepositoryImpl implements AuthRepository {
       LoginProvider.apple => 'APPLE',
       LoginProvider.kakao => 'KAKAO',
     };
+  }
+
+  bool _shouldClearLocalAuth(ApiException exception) {
+    return exception.statusCode == 401 || exception.code == 'AUTH_007';
   }
 }

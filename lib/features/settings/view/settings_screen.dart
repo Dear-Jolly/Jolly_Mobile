@@ -161,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed == true && context.mounted) {
       await _runAccountAction(
         action: () => locator<DeleteAccountUseCase>().execute(),
-        onSuccess: () => context.go('/login'),
+        onSuccess: () => context.go('/splash'),
       );
     }
   }
