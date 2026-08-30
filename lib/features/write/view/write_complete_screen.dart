@@ -6,7 +6,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 
 class WriteCompleteScreen extends StatelessWidget {
-  const WriteCompleteScreen({super.key});
+  final int? letterId;
+  final DateTime? submittedAt;
+
+  const WriteCompleteScreen({super.key, this.letterId, this.submittedAt});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,7 @@ class WriteCompleteScreen extends StatelessWidget {
             right: 24,
             top: 20,
             child: GestureDetector(
-              onTap: () => context.go('/home'),
+              onTap: () => _goHome(context),
               child: SvgPicture.asset(
                 'assets/icons/ic_x.svg',
                 width: 24,
@@ -81,7 +84,7 @@ class WriteCompleteScreen extends StatelessWidget {
             right: 0,
             child: Center(
               child: GestureDetector(
-                onTap: () => context.go('/home'),
+                onTap: () => _goHome(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
@@ -103,6 +106,26 @@ class WriteCompleteScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _goHome(BuildContext context) {
+    final id = letterId;
+    final startedAt = submittedAt;
+
+    if (id == null || startedAt == null) {
+      context.go('/home');
+      return;
+    }
+
+    context.go(
+      Uri(
+        path: '/home',
+        queryParameters: {
+          'letterId': id.toString(),
+          'submittedAt': startedAt.toIso8601String(),
+        },
+      ).toString(),
     );
   }
 }

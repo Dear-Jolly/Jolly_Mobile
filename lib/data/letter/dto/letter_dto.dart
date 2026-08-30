@@ -42,6 +42,7 @@ class LetterDto {
       id: json['letterId'] as int? ?? json['id'] as int,
       content: json['summary'] as String? ?? json['content'] as String? ?? '',
       date: _parseDate(json['date'] as String?),
+      createdAt: _parseCreatedAt(json),
       stampImage: json['stampImage'] as String?,
       status: status,
       isNew:
@@ -58,6 +59,7 @@ class LetterDto {
           json['summary'] as String? ??
           '',
       date: _parseDate(json['date'] as String?),
+      createdAt: _parseCreatedAt(json),
       stampImage: json['stampImage'] as String?,
       status: json['status'] as String? ?? 'SUBMITTED',
       isNew: false,
@@ -68,13 +70,11 @@ class LetterDto {
     Map<String, dynamic> json, {
     required String content,
   }) {
-    final createdAt = DateTime.tryParse(json['createdAt'] as String? ?? '');
-
     return LetterDto(
       id: json['letterId'] as int? ?? json['id'] as int,
       content: content,
       date: _parseDate(json['date'] as String?),
-      createdAt: createdAt,
+      createdAt: _parseCreatedAt(json),
       status: 'SUBMITTED',
     );
   }
@@ -102,5 +102,18 @@ class LetterDto {
       return DateTime(now.year, now.month, now.day);
     }
     return DateTime(parsed.year, parsed.month, parsed.day);
+  }
+
+  static DateTime? _parseCreatedAt(Map<String, dynamic> json) {
+    for (final key in const ['createdAt', 'writtenAt', 'submittedAt']) {
+      final value = json[key];
+      if (value is String) {
+        final parsed = DateTime.tryParse(value);
+        if (parsed != null) {
+          return parsed;
+        }
+      }
+    }
+    return null;
   }
 }

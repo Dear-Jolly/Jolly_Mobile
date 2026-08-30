@@ -6,10 +6,23 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_theme.dart';
 
 class LetterCard extends StatelessWidget {
+  static const feedbackWaitDuration = Duration(minutes: 5);
+
   final Letter letter;
+  final DateTime? now;
+  final DateTime? countdownStartedAt;
   final VoidCallback? onTap;
 
-  const LetterCard({super.key, required this.letter, this.onTap});
+  const LetterCard({
+    super.key,
+    required this.letter,
+    this.now,
+    this.countdownStartedAt,
+    this.onTap,
+  });
+
+  bool get _showCountdownBadge =>
+      !letter.hasFeedback && countdownStartedAt != null;
 
   @override
   Widget build(BuildContext context) {
@@ -17,26 +30,43 @@ class LetterCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 80,
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Row(
+        child: Stack(
           children: [
-            _buildStamp(),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
                 children: [
-                  _buildDateRow(),
-                  const SizedBox(height: 8),
-                  _buildContentRow(),
+                  _buildStamp(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: _showCountdownBadge ? 20 : 0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildDateRow(),
+                          const SizedBox(height: 8),
+                          _buildContentRow(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
+            if (_showCountdownBadge)
+              Positioned(
+                top: 14,
+                right: 12,
+                child: _CountdownBadge(text: _countdownText()),
+              ),
           ],
         ),
       ),
@@ -101,6 +131,27 @@ class LetterCard extends StatelessWidget {
     return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
   }
 
+  String _countdownText() {
+    final startedAt = countdownStartedAt;
+    if (startedAt == null) {
+      return '5:00';
+    }
+
+    final maxSeconds = feedbackWaitDuration.inSeconds;
+    final current = now ?? DateTime.now();
+    var remainingSeconds = maxSeconds - current.difference(startedAt).inSeconds;
+
+    if (remainingSeconds < 0) {
+      remainingSeconds = 0;
+    } else if (remainingSeconds > maxSeconds) {
+      remainingSeconds = maxSeconds;
+    }
+
+    final minutes = remainingSeconds ~/ 60;
+    final seconds = (remainingSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   Widget _stampImage(String? path) {
     final fallback = Container(width: 44, height: 56, color: AppColors.gray100);
     if (path == null || path.isEmpty) {
@@ -127,6 +178,33 @@ class LetterCard extends StatelessWidget {
       width: 44,
       height: 56,
       errorBuilder: (context, error, stackTrace) => fallback,
+    );
+  }
+}
+
+class _CountdownBadge extends StatelessWidget {
+  final String text;
+
+  const _CountdownBadge({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 20,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.green100,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: AppTextTheme.detail6Md12.copyWith(
+          color: AppColors.green200,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+      ),
     );
   }
 }

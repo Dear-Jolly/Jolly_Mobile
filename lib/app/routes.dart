@@ -43,11 +43,28 @@ final router = GoRouter(
       path: '/onboarding/welcome',
       builder: (_, _) => const WelcomeScreen(),
     ),
-    GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+    GoRoute(
+      path: '/home',
+      builder: (_, state) {
+        final query = state.uri.queryParameters;
+        return HomeScreen(
+          initialPendingLetterId: int.tryParse(query['letterId'] ?? ''),
+          initialPendingStartedAt: DateTime.tryParse(
+            query['submittedAt'] ?? '',
+          ),
+        );
+      },
+    ),
     GoRoute(path: '/write', builder: (_, _) => const WriteLetterScreen()),
     GoRoute(
       path: '/write/complete',
-      builder: (_, _) => const WriteCompleteScreen(),
+      builder: (_, state) {
+        final query = state.uri.queryParameters;
+        return WriteCompleteScreen(
+          letterId: int.tryParse(query['letterId'] ?? ''),
+          submittedAt: DateTime.tryParse(query['submittedAt'] ?? ''),
+        );
+      },
     ),
     GoRoute(path: '/review', redirect: (_, _) => '/home'),
     GoRoute(
