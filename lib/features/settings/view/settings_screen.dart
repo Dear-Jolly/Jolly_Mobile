@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
 import '../../../core/widgets/jolly_dialog.dart';
+import '../../../core/widgets/jolly_loading_indicator.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../domain/entity/user.dart';
 import '../../../domain/model/result.dart';
@@ -43,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         showBottomBorder: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: JollyLoadingIndicator())
           : Column(
               children: [
                 const SizedBox(height: 24),

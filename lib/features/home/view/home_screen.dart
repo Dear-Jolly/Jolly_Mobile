@@ -10,6 +10,7 @@ import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/check_pattern.dart';
 import '../../../core/widgets/feedback_delivery_failure_dialog.dart';
 import '../../../core/widgets/jolly_button.dart';
+import '../../../core/widgets/jolly_loading_indicator.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/letter_card.dart';
 import '../../../domain/entity/home_data.dart';
@@ -279,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: JollyLoadingIndicator());
     }
 
     if (_errorMessage != null) {
@@ -351,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (index >= _letters.length) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: JollyLoadingIndicator(width: 36, height: 51)),
           );
         }
 

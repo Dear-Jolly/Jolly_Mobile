@@ -54,6 +54,7 @@ dependencies:
   app_links: ^7.0.0
   flutter_timezone: ^5.1.0
   package_info_plus: ^9.0.1
+  lottie: ^3.3.3
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/animations/
 
   fonts:
     - family: Pretendard

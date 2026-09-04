@@ -8,6 +8,7 @@ import '../../../core/widgets/check_pattern.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
 import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_letter_header.dart';
+import '../../../core/widgets/jolly_loading_indicator.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/review_tip.dart';
 import '../../../domain/entity/letter_review.dart';
@@ -47,7 +48,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           SafeArea(
             top: false,
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: JollyLoadingIndicator())
                 : review == null
                 ? _buildError()
                 : Column(

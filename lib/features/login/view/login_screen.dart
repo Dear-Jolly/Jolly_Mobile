@@ -12,6 +12,7 @@ import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/intro_pattern_background.dart';
 import '../../../core/widgets/intro_splash_logo.dart';
+import '../../../core/widgets/jolly_loading_indicator.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/social_login_button.dart';
 import '../../../domain/entity/user.dart';
@@ -92,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Positioned.fill(
                   child: ColoredBox(
                     color: Color(0x33000000),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: JollyLoadingIndicator()),
                   ),
                 ),
             ],
