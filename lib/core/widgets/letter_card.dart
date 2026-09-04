@@ -22,7 +22,7 @@ class LetterCard extends StatelessWidget {
   });
 
   bool get _showCountdownBadge =>
-      !letter.hasFeedback && countdownStartedAt != null;
+      letter.isFeedbackPending && countdownStartedAt != null;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,11 @@ class LetterCard extends StatelessWidget {
   }
 
   Widget _buildStamp() {
-    if (!letter.hasFeedback) {
+    if (letter.stampImage != null && letter.stampImage!.isNotEmpty) {
+      return _stampImage(letter.stampImage);
+    }
+
+    if (letter.isFeedbackPending) {
       return Image.asset(
         'assets/images/stamp_not_arrived.png',
         width: 44,
@@ -82,7 +86,7 @@ class LetterCard extends StatelessWidget {
       );
     }
 
-    return _stampImage(letter.stampImage);
+    return _stampImage(null);
   }
 
   Widget _buildDateRow() {
@@ -101,12 +105,16 @@ class LetterCard extends StatelessWidget {
   }
 
   Widget _buildContentRow() {
+    final isFailed = letter.isFeedbackFailed;
+
     return Row(
       children: [
         Expanded(
           child: Text(
-            letter.content,
-            style: AppTextTheme.body3Md16.copyWith(color: AppColors.gray900),
+            isFailed ? '피드백 배송에 실패했어요' : letter.content,
+            style: AppTextTheme.body3Md16.copyWith(
+              color: isFailed ? AppColors.burgundy : AppColors.gray900,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -155,12 +163,7 @@ class LetterCard extends StatelessWidget {
   Widget _stampImage(String? path) {
     final fallback = Container(width: 44, height: 56, color: AppColors.gray100);
     if (path == null || path.isEmpty) {
-      return Image.asset(
-        'assets/images/stamp_flower.png',
-        width: 44,
-        height: 56,
-        errorBuilder: (context, error, stackTrace) => fallback,
-      );
+      return fallback;
     }
 
     if (path.startsWith('http')) {

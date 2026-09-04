@@ -4,8 +4,9 @@ class ApiException implements Exception {
   final String message;
   final int? statusCode;
   final String? code;
+  final String? requestId;
 
-  ApiException(this.message, {this.statusCode, this.code});
+  ApiException(this.message, {this.statusCode, this.code, this.requestId});
 
   factory ApiException.fromDioException(DioException e) {
     switch (e.type) {
@@ -17,6 +18,7 @@ class ApiException implements Exception {
         final statusCode = e.response?.statusCode;
         final serverMessage = _messageFromResponse(e.response?.data);
         final serverCode = _codeFromResponse(e.response?.data);
+        final requestId = _requestIdFromHeaders(e.response?.headers);
         final message =
             serverMessage ??
             switch (statusCode) {
@@ -27,7 +29,12 @@ class ApiException implements Exception {
               500 => '서버 오류가 발생했습니다.',
               _ => '오류가 발생했습니다. ($statusCode)',
             };
-        return ApiException(message, statusCode: statusCode, code: serverCode);
+        return ApiException(
+          message,
+          statusCode: statusCode,
+          code: serverCode,
+          requestId: requestId,
+        );
       case DioExceptionType.cancel:
         return ApiException('요청이 취소되었습니다.');
       case DioExceptionType.connectionError:
@@ -52,5 +59,9 @@ class ApiException implements Exception {
       return data['code'] as String;
     }
     return null;
+  }
+
+  static String? _requestIdFromHeaders(Headers? headers) {
+    return headers?.value('X-Request-Id') ?? headers?.value('x-request-id');
   }
 }

@@ -9,5 +9,11 @@ class Success<T> extends Result<T> {
 
 class Failure<T> extends Result<T> {
   final String message;
-  const Failure(this.message);
+  final int? statusCode;
+  final String? code;
+  final String? requestId;
+
+  const Failure(this.message, {this.statusCode, this.code, this.requestId});
+
+  bool get isRateLimited => statusCode == 429 || code == 'COMMON_004';
 }

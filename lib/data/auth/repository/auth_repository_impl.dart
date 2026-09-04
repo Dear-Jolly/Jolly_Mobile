@@ -49,7 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _storage.saveTermsAgreed(dto.termsAgreed);
       return const Success(null);
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -67,7 +67,7 @@ class AuthRepositoryImpl implements AuthRepository {
         await _storage.clearAuthState();
         return const Success(null);
       }
-      return Failure(exception.message);
+      return _failureFromApiException(exception);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -85,7 +85,7 @@ class AuthRepositoryImpl implements AuthRepository {
         await _storage.clearAuthState();
         return const Success(null);
       }
-      return Failure(exception.message);
+      return _failureFromApiException(exception);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -99,7 +99,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final userDto = await _dataSource.getUser();
       return Success(userDto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -112,7 +112,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final userDto = await _dataSource.getUser();
       return Success(userDto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -124,7 +124,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final userDto = await _dataSource.getUser();
       return Success(userDto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -139,5 +139,19 @@ class AuthRepositoryImpl implements AuthRepository {
 
   bool _shouldClearLocalAuth(ApiException exception) {
     return exception.statusCode == 401 || exception.code == 'AUTH_007';
+  }
+
+  Failure<T> _failureFromDioException<T>(DioException e) {
+    final exception = ApiException.fromDioException(e);
+    return _failureFromApiException(exception);
+  }
+
+  Failure<T> _failureFromApiException<T>(ApiException exception) {
+    return Failure(
+      exception.message,
+      statusCode: exception.statusCode,
+      code: exception.code,
+      requestId: exception.requestId,
+    );
   }
 }

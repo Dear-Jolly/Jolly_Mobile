@@ -1,4 +1,9 @@
-enum LetterStatus { submitted, feedbackInProgress, feedbackCompleted }
+enum LetterStatus {
+  submitted,
+  feedbackInProgress,
+  feedbackCompleted,
+  feedbackFailed,
+}
 
 class Letter {
   final int id;
@@ -20,6 +25,10 @@ class Letter {
   });
 
   bool get hasFeedback => status == LetterStatus.feedbackCompleted;
+  bool get isFeedbackFailed => status == LetterStatus.feedbackFailed;
+  bool get isFeedbackPending =>
+      status == LetterStatus.submitted ||
+      status == LetterStatus.feedbackInProgress;
 
   Letter copyWith({
     int? id,

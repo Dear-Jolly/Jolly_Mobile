@@ -22,6 +22,7 @@ class LetterReview {
   });
 
   bool get hasFeedback => status == LetterStatus.feedbackCompleted;
+  bool get isFeedbackFailed => status == LetterStatus.feedbackFailed;
 }
 
 enum CorrectionSegmentType { unchanged, modified }

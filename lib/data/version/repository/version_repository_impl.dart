@@ -22,7 +22,13 @@ class VersionRepositoryImpl implements VersionRepository {
       );
       return Success(dto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      final exception = ApiException.fromDioException(e);
+      return Failure(
+        exception.message,
+        statusCode: exception.statusCode,
+        code: exception.code,
+        requestId: exception.requestId,
+      );
     } catch (e) {
       return Failure(e.toString());
     }

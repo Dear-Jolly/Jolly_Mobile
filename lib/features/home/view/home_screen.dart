@@ -58,16 +58,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   static const _pageSize = 50;
   static const _feedbackPollingInterval = Duration(seconds: 10);
   static const _countdownTickInterval = Duration(seconds: 1);
+  static const _rateLimitBackoff = Duration(minutes: 1);
 
   final _scrollController = ScrollController();
   final Map<int, DateTime> _pendingStartedAtOverrides = {};
+  final Set<int> _feedbackFailedLetterIds = {};
   Timer? _feedbackPollingTimer;
   Timer? _countdownTimer;
+  Timer? _rateLimitResumeTimer;
 
   SortOrder _sortOrder = SortOrder.recent;
   HomeData? _homeData;
   List<Letter> _letters = [];
   DateTime _now = DateTime.now();
+  DateTime? _rateLimitPausedUntil;
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _isRefreshingInBackground = false;
@@ -96,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _stopFeedbackPolling();
     _stopCountdownTimer();
+    _rateLimitResumeTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -399,6 +404,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     if (homeResult is Success<HomeData> &&
         lettersResult is Success<LetterPage>) {
+      _recordFailedLetters(lettersResult.data.letters);
       setState(() {
         _homeData = homeResult.data;
         _letters = lettersResult.data.letters;
@@ -446,6 +452,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     switch (result) {
       case Success(data: final page):
+        _recordFailedLetters(page.letters);
         setState(() {
           _letters = [..._letters, ...page.letters];
           _hasNext = page.hasNext;
@@ -479,7 +486,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
       );
 
-      if (!mounted || homeResult is! Success<HomeData>) {
+      if (!mounted) {
+        return;
+      }
+
+      if (homeResult is! Success<HomeData>) {
+        _pauseFeedbackPollingIfRateLimited(homeResult);
         return;
       }
 
@@ -490,11 +502,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final result = lettersResults[index];
         switch (result) {
           case Success(data: final page):
+            _recordFailedLetters(page.letters);
             refreshedLetters.addAll(page.letters);
             if (index == lettersResults.length - 1) {
               hasNext = page.hasNext;
             }
           case Failure():
+            _pauseFeedbackPollingIfRateLimited(result);
             return;
         }
       }
@@ -548,9 +562,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     switch (result) {
       case Success(data: final latestLetter):
+        _recordFailedLetters([latestLetter]);
         _replaceLetter(latestLetter);
         _syncPendingLetterTimers();
-        if (!_isCountdownActive(latestLetter) && latestLetter.hasFeedback) {
+        if (latestLetter.isFeedbackFailed) {
+          await FeedbackDeliveryFailureDialog.show(context);
+        } else if (!_isCountdownActive(latestLetter) &&
+            latestLetter.hasFeedback) {
           await context.push('/review/${latestLetter.id}');
           if (mounted) {
             unawaited(_refreshHomeSilently());
@@ -578,6 +596,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() => _letters = updatedLetters);
   }
 
+  void _recordFailedLetters(Iterable<Letter> letters) {
+    for (final letter in letters) {
+      if (letter.isFeedbackFailed) {
+        _feedbackFailedLetterIds.add(letter.id);
+      }
+    }
+  }
+
   void _saveInitialPendingStartedAt() {
     final id = widget.initialPendingLetterId;
     final startedAt = widget.initialPendingStartedAt;
@@ -598,6 +624,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   bool _isCountdownActive(Letter letter) {
+    if (letter.isFeedbackFailed ||
+        _feedbackFailedLetterIds.contains(letter.id)) {
+      return false;
+    }
+
     final startedAt = _pendingStartedAtFor(letter);
     if (startedAt == null) {
       return false;
@@ -616,7 +647,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Letter _displayLetterFor(Letter letter) {
-    if (!_isCountdownActive(letter)) {
+    if (letter.isFeedbackFailed ||
+        _feedbackFailedLetterIds.contains(letter.id) ||
+        !_isCountdownActive(letter)) {
       return letter;
     }
 
@@ -660,6 +693,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _syncFeedbackPolling() {
+    if (_isRateLimitPauseActive()) {
+      _stopFeedbackPolling();
+      _scheduleRateLimitResume();
+      return;
+    }
+
     if (!_isAppActive || !_hasLettersWaitingForFeedback) {
       _stopFeedbackPolling();
       return;
@@ -678,6 +717,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void _stopFeedbackPolling() {
     _feedbackPollingTimer?.cancel();
     _feedbackPollingTimer = null;
+  }
+
+  bool _isRateLimitPauseActive() {
+    final pausedUntil = _rateLimitPausedUntil;
+    if (pausedUntil == null) {
+      return false;
+    }
+
+    if (DateTime.now().isBefore(pausedUntil)) {
+      return true;
+    }
+
+    _rateLimitPausedUntil = null;
+    return false;
+  }
+
+  void _pauseFeedbackPollingIfRateLimited<T>(Result<T> result) {
+    if (result is Failure<T> && result.isRateLimited) {
+      _rateLimitPausedUntil = DateTime.now().add(_rateLimitBackoff);
+      _stopFeedbackPolling();
+      _scheduleRateLimitResume();
+    }
+  }
+
+  void _scheduleRateLimitResume() {
+    final pausedUntil = _rateLimitPausedUntil;
+    if (pausedUntil == null) {
+      return;
+    }
+
+    _rateLimitResumeTimer?.cancel();
+    final delay = pausedUntil.difference(DateTime.now());
+    _rateLimitResumeTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
+      if (!mounted) {
+        return;
+      }
+      _rateLimitPausedUntil = null;
+      _syncPendingLetterTimers();
+    });
   }
 
   String? _failureMessage<T>(Result<T> result) {

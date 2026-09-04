@@ -5,6 +5,7 @@ import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/check_pattern.dart';
+import '../../../core/widgets/feedback_delivery_failure_dialog.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
 import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_letter_header.dart';
@@ -104,6 +105,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
     switch (result) {
       case Success(data: final review):
+        if (!review.hasFeedback) {
+          final message = review.isFeedbackFailed
+              ? '피드백 배송에 실패했어요. 잠시 후 다시 확인해주세요.'
+              : 'Jolly가 아직 편지를 검토하고 있어요.';
+          setState(() {
+            _review = null;
+            _isLoading = false;
+            _errorMessage = message;
+          });
+          if (review.isFeedbackFailed) {
+            await FeedbackDeliveryFailureDialog.show(context);
+          }
+          return;
+        }
+
         setState(() {
           _review = review;
           _isLoading = false;

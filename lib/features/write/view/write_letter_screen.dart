@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +35,13 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
   bool _canSubmit = false;
   bool _isSubmitting = false;
   int _characterCount = 0;
+  DateTime? _submitPausedUntil;
+  Timer? _submitResumeTimer;
+
+  bool get _isSubmitPaused {
+    final pausedUntil = _submitPausedUntil;
+    return pausedUntil != null && DateTime.now().isBefore(pausedUntil);
+  }
 
   @override
   void initState() {
@@ -43,6 +52,7 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
   @override
   void dispose() {
     _contentController.dispose();
+    _submitResumeTimer?.cancel();
     super.dispose();
   }
 
@@ -197,7 +207,10 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: JollyButton(
                               text: '전달하기',
-                              enabled: _canSubmit && !_isSubmitting,
+                              enabled:
+                                  _canSubmit &&
+                                  !_isSubmitting &&
+                                  !_isSubmitPaused,
                               onPressed: _showConfirmDialog,
                             ),
                           ),
@@ -237,9 +250,28 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
             },
           ).toString(),
         );
-      case Failure(message: final message):
+      case Failure(
+        message: final message,
+        statusCode: final statusCode,
+        code: final code,
+      ):
+        if (statusCode == 429 || code == 'COMMON_004') {
+          _pauseSubmitForRateLimit();
+        }
         JollyToast.show(context, message: message);
     }
+  }
+
+  void _pauseSubmitForRateLimit() {
+    final pausedUntil = DateTime.now().add(const Duration(minutes: 1));
+    _submitResumeTimer?.cancel();
+    setState(() => _submitPausedUntil = pausedUntil);
+    _submitResumeTimer = Timer(pausedUntil.difference(DateTime.now()), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _submitPausedUntil = null);
+    });
   }
 
   String _formattedDate() {

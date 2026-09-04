@@ -89,6 +89,7 @@ class LetterDto {
       status: switch (status) {
         'FEEDBACK_COMPLETED' => LetterStatus.feedbackCompleted,
         'FEEDBACK_IN_PROGRESS' => LetterStatus.feedbackInProgress,
+        'FEEDBACK_FAILED' => LetterStatus.feedbackFailed,
         _ => LetterStatus.submitted,
       },
       isNew: isNew,

@@ -20,7 +20,7 @@ class LetterRepositoryImpl implements LetterRepository {
       final dto = await _dataSource.getHomeData();
       return Success(dto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -45,7 +45,7 @@ class LetterRepositoryImpl implements LetterRepository {
         ),
       );
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -57,7 +57,7 @@ class LetterRepositoryImpl implements LetterRepository {
       final dto = await _dataSource.getLetterDetail(letterId);
       return Success(dto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -69,7 +69,7 @@ class LetterRepositoryImpl implements LetterRepository {
       final dto = await _dataSource.createLetter(content);
       return Success(dto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
@@ -81,9 +81,19 @@ class LetterRepositoryImpl implements LetterRepository {
       final dto = await _dataSource.getLetterReview(letterId);
       return Success(dto.toEntity());
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioException(e).message);
+      return _failureFromDioException(e);
     } catch (e) {
       return Failure(e.toString());
     }
+  }
+
+  Failure<T> _failureFromDioException<T>(DioException e) {
+    final exception = ApiException.fromDioException(e);
+    return Failure(
+      exception.message,
+      statusCode: exception.statusCode,
+      code: exception.code,
+      requestId: exception.requestId,
+    );
   }
 }
