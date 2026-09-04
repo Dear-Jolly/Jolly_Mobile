@@ -73,11 +73,15 @@ UIScene 전환은 딥링크 수신 경로를 바꾸기 때문에 로그인 콜�
 
 `/auth/apple` 은 `scope=name email` 로 요청하는데, Apple 은 **최초 인증 때만** 이름과 이메일을 보낸다. 테스트하다가 같은 Apple ID로 재인증하면 이메일이 안 오므로, 서버가 그 경우도 처리하는지 함께 봐야 한다.
 
-**지원 URL 이 비어 있다.** App Store Connect 의 필수 항목이라 이 값 없이는 심사 제출이 안 된다.
-문의를 받을 수 있는 페이지가 필요하다. Guideline 1.5 는 지원 URL 이 실제로 지원을 제공할 것을 요구하므로,
-아무 페이지나 넣으면 반려 사유가 된다. 문의 메일 주소가 적힌 Notion 페이지 하나면 충분하다.
+**빌드 업로드만 남았다.** IPA 는 배포용 인증서로 서명을 마쳤다.
 
-**스크린샷이 아직 없다.** 6.9인치 한 세트가 필수다.
+    build/ios/ipa/Dear Jolly.ipa
+
+업로드는 앱 암호를 키체인에 넣어 두고 altool 로 보낸다. 이 Xcode 버전은 `--item` 플래그를 요구한다.
+
+    xcrun altool --store-password-in-keychain-item --item AC_PASSWORD -u <Apple ID> -p <앱 암호>
+    xcrun altool --upload-app --type ios -f "build/ios/ipa/Dear Jolly.ipa" \
+      -u <Apple ID> -p "@keychain:AC_PASSWORD"
 
 ### 선택 사항
 
@@ -107,6 +111,26 @@ flutter build ipa --release \
 ---
 
 ## 5. App Store Connect 입력값
+
+### 입력을 마친 항목
+
+- 스크린샷 6장 (6.5인치, 1242 x 2688, 알파 제거). 원본이 3780 x 8208 이라 규격에 맞춰 변환했다.
+  여러 장을 한 번에 올리면 순서가 섞이므로 한 장씩 순서대로 올려야 한다.
+- 프로모션 텍스트: 영어 일기를 쓰고 피드백을 편지로 받는 영어 학습 서비스
+- 설명 첫 줄: Write Jolly, Feel jolly!
+- 지원 URL: https://yeonjeen-0821.notion.site/support
+- 마케팅 URL: https://www.instagram.com/dearjolly.official
+- 개인정보 처리방침 URL, 데이터 수집 4종 답변 게시 완료
+- 연령 등급 4+, 가격 무료, 대한민국 단독 출시
+- 심사 메모 작성, 데모 계정 칸은 비우고 리뷰어 Apple ID 안내로 대체
+
+### TestFlight
+
+- 내부 그룹 `졸리` 생성, 자동 배포 켬
+- 계정 소유자 추가 완료
+- leeyeonjeen@icloud.com 은 App Store Connect 사용자로 초대함 (Dear Jolly 앱 한정,
+  앱 관리 · 사용자 지원 역할). 초대를 수락해야 내부 테스터 목록에 나타난다.
+- 베타 앱 설명, 피드백 이메일, 개인정보 URL, 베타 심사 메모 입력 완료
 
 ### 앱 정보 (입력 완료)
 - Apple ID: `6808617546`
