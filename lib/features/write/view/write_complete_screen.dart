@@ -62,7 +62,7 @@ class WriteCompleteScreen extends StatelessWidget {
                     ),
                   ),
                   const TextSpan(text: '이에요.\n'),
-                  const TextSpan(text: '검토 완료까지는 시간이 걸릴 수 있어요.'),
+                  const TextSpan(text: '검토 완료까지는 5분이 소요돼요.'),
                 ],
               ),
             ),
