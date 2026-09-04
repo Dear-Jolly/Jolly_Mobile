@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/di/locator.dart';
-import '../../../core/platform/app_info.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/check_pattern.dart';
 import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_toast.dart';
 
-class ForceUpdateScreen extends StatefulWidget {
+class ForceUpdateScreen extends ConsumerStatefulWidget {
   const ForceUpdateScreen({super.key});
 
   @override
-  State<ForceUpdateScreen> createState() => _ForceUpdateScreenState();
+  ConsumerState<ForceUpdateScreen> createState() => _ForceUpdateScreenState();
 }
 
-class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
+class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
   bool _isOpeningStore = false;
 
-  Uri? get _storeUri => locator<AppInfo>().storeUri;
+  Uri? get _storeUri => ref.read(appInfoProvider).storeUri;
 
   @override
   Widget build(BuildContext context) {

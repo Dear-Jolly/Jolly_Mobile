@@ -1,40 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
-import '../../../core/di/locator.dart';
-import '../../../core/storage/secure_storage.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/intro_pattern_background.dart';
 import '../../../core/widgets/intro_splash_logo.dart';
-import '../../../domain/usecase/auth/get_user_usecase.dart';
-import '../../../domain/usecase/version/check_version_usecase.dart';
 import '../view_model/splash_view_model.dart';
 
-class SplashScreen extends StatelessWidget {
+final _splashViewModelProvider = Provider<SplashViewModel>((ref) {
+  final viewModel = SplashViewModel(
+    ref.watch(secureStorageProvider),
+    ref.watch(getUserUseCaseProvider),
+    ref.watch(checkVersionUseCaseProvider),
+  );
+  ref.onDispose(viewModel.dispose);
+  return viewModel;
+});
+
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SplashViewModel(
-        locator<SecureStorage>(),
-        locator<GetUserUseCase>(),
-        locator<CheckVersionUseCase>(),
-      ),
-      child: const _SplashView(),
-    );
-  }
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashView extends StatefulWidget {
-  const _SplashView();
-
-  @override
-  State<_SplashView> createState() => _SplashViewState();
-}
-
-class _SplashViewState extends State<_SplashView> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -42,7 +33,7 @@ class _SplashViewState extends State<_SplashView> {
   }
 
   Future<void> _init() async {
-    final nextRoute = await context.read<SplashViewModel>().initialize();
+    final nextRoute = await ref.read(_splashViewModelProvider).initialize();
     if (mounted) {
       context.go(nextRoute);
     }

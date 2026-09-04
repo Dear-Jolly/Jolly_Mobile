@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/intro_pattern_background.dart';
@@ -9,16 +10,15 @@ import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_checkbox.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/auth/agree_terms_usecase.dart';
 
-class TermsScreen extends StatefulWidget {
+class TermsScreen extends ConsumerStatefulWidget {
   const TermsScreen({super.key});
 
   @override
-  State<TermsScreen> createState() => _TermsScreenState();
+  ConsumerState<TermsScreen> createState() => _TermsScreenState();
 }
 
-class _TermsScreenState extends State<TermsScreen> {
+class _TermsScreenState extends ConsumerState<TermsScreen> {
   bool _allAgreed = false;
   bool _termsAgreed = false;
   bool _privacyAgreed = false;
@@ -124,11 +124,13 @@ class _TermsScreenState extends State<TermsScreen> {
   Future<void> _submitTerms() async {
     setState(() => _isSubmitting = true);
 
-    final result = await locator<AgreeTermsUseCase>().execute(
-      serviceAgreed: _termsAgreed,
-      privacyAgreed: _privacyAgreed,
-      marketingAgreed: _marketingAgreed,
-    );
+    final result = await ref
+        .read(agreeTermsUseCaseProvider)
+        .execute(
+          serviceAgreed: _termsAgreed,
+          privacyAgreed: _privacyAgreed,
+          marketingAgreed: _marketingAgreed,
+        );
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/utils/nickname_validator.dart';
@@ -10,16 +11,15 @@ import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_text_field.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/auth/register_nickname_usecase.dart';
 
-class NicknameScreen extends StatefulWidget {
+class NicknameScreen extends ConsumerStatefulWidget {
   const NicknameScreen({super.key});
 
   @override
-  State<NicknameScreen> createState() => _NicknameScreenState();
+  ConsumerState<NicknameScreen> createState() => _NicknameScreenState();
 }
 
-class _NicknameScreenState extends State<NicknameScreen> {
+class _NicknameScreenState extends ConsumerState<NicknameScreen> {
   final _controller = TextEditingController();
   String? _errorText;
   bool _isValid = false;
@@ -93,9 +93,9 @@ class _NicknameScreenState extends State<NicknameScreen> {
   Future<void> _submitNickname() async {
     setState(() => _isSubmitting = true);
 
-    final result = await locator<RegisterNicknameUseCase>().execute(
-      _controller.text.trim(),
-    );
+    final result = await ref
+        .read(registerNicknameUseCaseProvider)
+        .execute(_controller.text.trim());
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);

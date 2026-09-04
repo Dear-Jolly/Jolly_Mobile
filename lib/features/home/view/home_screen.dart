@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/check_pattern.dart';
@@ -17,9 +18,6 @@ import '../../../domain/entity/home_data.dart';
 import '../../../domain/entity/letter.dart';
 import '../../../domain/entity/letter_page.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/letter/get_home_data_usecase.dart';
-import '../../../domain/usecase/letter/get_letter_detail_usecase.dart';
-import '../../../domain/usecase/letter/get_letters_usecase.dart';
 
 enum SortOrder { recent, oldest }
 
@@ -40,7 +38,7 @@ extension on SortOrder {
   };
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   final int? initialPendingLetterId;
   final DateTime? initialPendingStartedAt;
 
@@ -51,10 +49,11 @@ class HomeScreen extends StatefulWidget {
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   static const _pageSize = 50;
   static const _feedbackPollingInterval = Duration(seconds: 10);
   static const _countdownTickInterval = Duration(seconds: 1);
@@ -393,12 +392,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
     }
 
-    final homeResult = await locator<GetHomeDataUseCase>().execute();
-    final lettersResult = await locator<GetLettersUseCase>().execute(
-      page: 0,
-      size: _pageSize,
-      sort: _sortOrder.requestSort,
-    );
+    final homeResult = await ref.read(getHomeDataUseCaseProvider).execute();
+    final lettersResult = await ref
+        .read(getLettersUseCaseProvider)
+        .execute(page: 0, size: _pageSize, sort: _sortOrder.requestSort);
 
     if (!mounted) return;
 
@@ -442,11 +439,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() => _isLoadingMore = true);
 
     final nextPage = _currentPage + 1;
-    final result = await locator<GetLettersUseCase>().execute(
-      page: nextPage,
-      size: _pageSize,
-      sort: _sortOrder.requestSort,
-    );
+    final result = await ref
+        .read(getLettersUseCaseProvider)
+        .execute(page: nextPage, size: _pageSize, sort: _sortOrder.requestSort);
 
     if (!mounted) return;
 
@@ -474,15 +469,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _isRefreshingInBackground = true;
     try {
       final pageCount = _currentPage + 1;
-      final homeResult = await locator<GetHomeDataUseCase>().execute();
+      final homeResult = await ref.read(getHomeDataUseCaseProvider).execute();
       final lettersResults = await Future.wait<Result<LetterPage>>(
         List.generate(
           pageCount,
-          (page) => locator<GetLettersUseCase>().execute(
-            page: page,
-            size: _pageSize,
-            sort: _sortOrder.requestSort,
-          ),
+          (page) => ref
+              .read(getLettersUseCaseProvider)
+              .execute(
+                page: page,
+                size: _pageSize,
+                sort: _sortOrder.requestSort,
+              ),
         ),
       );
 
@@ -549,7 +546,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     setState(() => _checkingLetterId = letter.id);
-    final result = await locator<GetLetterDetailUseCase>().execute(letter.id);
+    final result = await ref
+        .read(getLetterDetailUseCaseProvider)
+        .execute(letter.id);
 
     if (!mounted) {
       return;

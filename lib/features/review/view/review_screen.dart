@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/check_pattern.dart';
@@ -14,18 +15,17 @@ import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/review_tip.dart';
 import '../../../domain/entity/letter_review.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/letter/get_letter_review_usecase.dart';
 
-class ReviewScreen extends StatefulWidget {
+class ReviewScreen extends ConsumerStatefulWidget {
   final int letterId;
 
   const ReviewScreen({super.key, required this.letterId});
 
   @override
-  State<ReviewScreen> createState() => _ReviewScreenState();
+  ConsumerState<ReviewScreen> createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   LetterReview? _review;
   bool _isLoading = true;
   String? _errorMessage;
@@ -97,9 +97,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _errorMessage = null;
     });
 
-    final result = await locator<GetLetterReviewUseCase>().execute(
-      widget.letterId,
-    );
+    final result = await ref
+        .read(getLetterReviewUseCaseProvider)
+        .execute(widget.letterId);
 
     if (!mounted) return;
 

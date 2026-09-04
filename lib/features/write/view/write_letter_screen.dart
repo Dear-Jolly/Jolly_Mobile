@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/check_pattern.dart';
@@ -14,20 +15,19 @@ import '../../../core/widgets/jolly_dialog.dart';
 import '../../../core/widgets/jolly_letter_header.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/letter/create_letter_usecase.dart';
 
 final _englishLetterInputFormatter = FilteringTextInputFormatter.allow(
   RegExp(r'[\t\n\r -~]'),
 );
 
-class WriteLetterScreen extends StatefulWidget {
+class WriteLetterScreen extends ConsumerStatefulWidget {
   const WriteLetterScreen({super.key});
 
   @override
-  State<WriteLetterScreen> createState() => _WriteLetterScreenState();
+  ConsumerState<WriteLetterScreen> createState() => _WriteLetterScreenState();
 }
 
-class _WriteLetterScreenState extends State<WriteLetterScreen> {
+class _WriteLetterScreenState extends ConsumerState<WriteLetterScreen> {
   static const _maxContentLength = 500;
 
   final _contentController = TextEditingController();
@@ -231,9 +231,9 @@ class _WriteLetterScreenState extends State<WriteLetterScreen> {
   Future<void> _submitLetter() async {
     setState(() => _isSubmitting = true);
 
-    final result = await locator<CreateLetterUseCase>().execute(
-      _contentController.text,
-    );
+    final result = await ref
+        .read(createLetterUseCaseProvider)
+        .execute(_contentController.text);
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);

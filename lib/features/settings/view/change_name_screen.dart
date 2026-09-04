@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/utils/nickname_validator.dart';
@@ -10,16 +11,15 @@ import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_text_field.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/auth/update_nickname_usecase.dart';
 
-class ChangeNameScreen extends StatefulWidget {
+class ChangeNameScreen extends ConsumerStatefulWidget {
   const ChangeNameScreen({super.key});
 
   @override
-  State<ChangeNameScreen> createState() => _ChangeNameScreenState();
+  ConsumerState<ChangeNameScreen> createState() => _ChangeNameScreenState();
 }
 
-class _ChangeNameScreenState extends State<ChangeNameScreen> {
+class _ChangeNameScreenState extends ConsumerState<ChangeNameScreen> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
   String? _errorText;
@@ -114,9 +114,9 @@ class _ChangeNameScreenState extends State<ChangeNameScreen> {
   Future<void> _submitNickname() async {
     setState(() => _isSubmitting = true);
 
-    final result = await locator<UpdateNicknameUseCase>().execute(
-      _controller.text.trim(),
-    );
+    final result = await ref
+        .read(updateNicknameUseCaseProvider)
+        .execute(_controller.text.trim());
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);

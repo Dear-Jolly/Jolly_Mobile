@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
@@ -11,18 +12,15 @@ import '../../../core/widgets/jolly_loading_indicator.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../../../domain/entity/user.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/auth/delete_account_usecase.dart';
-import '../../../domain/usecase/auth/get_user_usecase.dart';
-import '../../../domain/usecase/auth/logout_usecase.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   User? _user;
   bool _isLoading = true;
   bool _isWorking = false;
@@ -122,7 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUser() async {
-    final result = await locator<GetUserUseCase>().execute();
+    final result = await ref.read(getUserUseCaseProvider).execute();
     if (!mounted) return;
 
     switch (result) {
@@ -147,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (confirmed == true && context.mounted) {
       await _runAccountAction(
-        action: () => locator<LogoutUseCase>().execute(),
+        action: () => ref.read(logoutUseCaseProvider).execute(),
         onSuccess: () => context.go('/login'),
       );
     }
@@ -164,7 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (confirmed == true && context.mounted) {
       await _runAccountAction(
-        action: () => locator<DeleteAccountUseCase>().execute(),
+        action: () => ref.read(deleteAccountUseCaseProvider).execute(),
         onSuccess: () => context.go('/splash'),
       );
     }

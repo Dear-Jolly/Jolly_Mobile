@@ -4,11 +4,12 @@ import 'dart:math' as math;
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/config/api_config.dart';
-import '../../../core/di/locator.dart';
+import '../../../core/di/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/intro_pattern_background.dart';
 import '../../../core/widgets/intro_splash_logo.dart';
@@ -17,17 +18,15 @@ import '../../../core/widgets/jolly_toast.dart';
 import '../../../core/widgets/social_login_button.dart';
 import '../../../domain/entity/user.dart';
 import '../../../domain/model/result.dart';
-import '../../../domain/usecase/auth/login_usecase.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _loginUseCase = locator<LoginUseCase>();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
   SocialLoginType? _loadingType;
@@ -136,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final provider = type == SocialLoginType.apple
         ? LoginProvider.apple
         : LoginProvider.kakao;
-    final loginUri = _loginUseCase.authorizationUri(provider);
+    final loginUri = ref.read(loginUseCaseProvider).authorizationUri(provider);
     bool launched;
     try {
       launched = await launchUrl(
@@ -163,7 +162,9 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _loadingType = SocialLoginType.kakao);
     }
 
-    final result = await _loginUseCase.completeWithCallback(uri);
+    final result = await ref
+        .read(loginUseCaseProvider)
+        .completeWithCallback(uri);
     if (!mounted) return;
 
     switch (result) {
