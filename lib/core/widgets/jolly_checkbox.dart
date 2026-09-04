@@ -11,6 +11,9 @@ class JollyCheckbox extends StatelessWidget {
   final bool isAllAgree;
   final Widget? trailing;
 
+  /// 약관 원문을 여는 콜백. 지정하면 체크박스 앞에 '보기' 링크가 붙는다.
+  final VoidCallback? onView;
+
   const JollyCheckbox({
     super.key,
     required this.label,
@@ -18,6 +21,7 @@ class JollyCheckbox extends StatelessWidget {
     required this.onTap,
     this.isAllAgree = false,
     this.trailing,
+    this.onView,
   });
 
   @override
@@ -76,6 +80,25 @@ class JollyCheckbox extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onView != null)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onView,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    child: Text(
+                      '보기',
+                      style: AppTextTheme.detail3Md13.copyWith(
+                        color: AppColors.gray600,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.gray600,
+                      ),
+                    ),
+                  ),
+                ),
               trailing ??
                   SvgPicture.asset(
                     isChecked

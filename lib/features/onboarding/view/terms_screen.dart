@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/api_config.dart';
 import '../../../core/di/locator.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
+import '../../../core/utils/external_link.dart';
 import '../../../core/widgets/intro_pattern_background.dart';
 import '../../../core/widgets/jolly_button.dart';
 import '../../../core/widgets/jolly_checkbox.dart';
@@ -92,18 +94,35 @@ class _TermsScreenState extends State<TermsScreen> {
                     label: '[필수] 서비스 이용약관 동의',
                     isChecked: _termsAgreed,
                     onTap: _toggleTerms,
+                    onView: () => ExternalLink.open(
+                      context,
+                      ApiConfig.termsOfServiceUri,
+                      failureMessage: '이용약관을 열 수 없습니다.',
+                    ),
                   ),
                   const SizedBox(height: 24),
                   JollyCheckbox(
                     label: '[필수] 개인정보 처리방침 동의',
                     isChecked: _privacyAgreed,
                     onTap: _togglePrivacy,
+                    onView: () => ExternalLink.open(
+                      context,
+                      ApiConfig.privacyPolicyUri,
+                      failureMessage: '개인정보처리방침을 열 수 없습니다.',
+                    ),
                   ),
                   const SizedBox(height: 24),
                   JollyCheckbox(
                     label: '[선택] 마케팅 정보 수신 동의',
                     isChecked: _marketingAgreed,
                     onTap: _toggleMarketing,
+                    onView: ApiConfig.marketingConsentUri == null
+                        ? null
+                        : () => ExternalLink.open(
+                            context,
+                            ApiConfig.marketingConsentUri,
+                            failureMessage: '안내를 열 수 없습니다.',
+                          ),
                   ),
                   const Spacer(),
                   JollyButton(

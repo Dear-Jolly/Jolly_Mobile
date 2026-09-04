@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/api_config.dart';
 import '../../../core/di/locator.dart';
+import '../../../core/platform/app_info.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
+import '../../../core/utils/external_link.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
 import '../../../core/widgets/jolly_dialog.dart';
 import '../../../core/widgets/jolly_toast.dart';
@@ -25,11 +28,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   User? _user;
   bool _isLoading = true;
   bool _isWorking = false;
+  String? _appVersion;
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    _loadAppVersion();
   }
 
   @override
@@ -87,15 +92,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
+                      if (ApiConfig.noticeUri != null) ...[
+                        _SettingsMenuItem(
+                          label: '공지사항',
+                          onTap: () => ExternalLink.open(
+                            context,
+                            ApiConfig.noticeUri,
+                            failureMessage: '공지사항을 열 수 없습니다.',
+                          ),
+                          showMore: true,
+                        ),
+                        const SizedBox(height: 40),
+                      ],
                       _SettingsMenuItem(
-                        label: '공지사항',
-                        onTap: () {},
+                        label: '서비스 이용약관',
+                        onTap: () => ExternalLink.open(
+                          context,
+                          ApiConfig.termsOfServiceUri,
+                          failureMessage: '이용약관을 열 수 없습니다.',
+                        ),
                         showMore: true,
                       ),
                       const SizedBox(height: 40),
                       _SettingsMenuItem(
                         label: '개인정보처리방침',
-                        onTap: () {},
+                        onTap: () => ExternalLink.open(
+                          context,
+                          ApiConfig.privacyPolicyUri,
+                          failureMessage: '개인정보처리방침을 열 수 없습니다.',
+                        ),
                         showMore: true,
                       ),
                       const SizedBox(height: 40),
@@ -110,7 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 64),
                 Text(
-                  '현재 버전 1.0.0 (MVP)',
+                  '현재 버전 ${_appVersion ?? '-'}',
                   style: AppTextTheme.detail3Md13.copyWith(
                     color: AppColors.gray300,
                   ),
@@ -118,6 +143,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
     );
+  }
+
+  Future<void> _loadAppVersion() async {
+    final version = await locator<AppInfo>().appVersion;
+    if (!mounted) return;
+    setState(() => _appVersion = version);
   }
 
   Future<void> _loadUser() async {
