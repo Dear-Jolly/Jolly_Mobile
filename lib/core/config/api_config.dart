@@ -16,7 +16,11 @@ class ApiConfig {
     defaultValue: '1.0.0',
   );
 
-  static const iosStoreUrl = String.fromEnvironment('JOLLY_IOS_STORE_URL');
+  /// App Store 앱 ID 6808617546 (com.dearjolly.app).
+  static const iosStoreUrl = String.fromEnvironment(
+    'JOLLY_IOS_STORE_URL',
+    defaultValue: 'https://apps.apple.com/app/id6808617546',
+  );
 
   static const androidStoreUrl = String.fromEnvironment('JOLLY_AOS_STORE_URL');
 
