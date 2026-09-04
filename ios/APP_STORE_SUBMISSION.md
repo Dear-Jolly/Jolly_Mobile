@@ -104,7 +104,7 @@ flutter build ipa --release \
 ### 앱 정보
 - 이름: Dear Jolly
 - 기본 언어: 한국어
-- 번들 ID: `com.dearjolly.jollyMobile`
+- 번들 ID: `com.dearjolly.app`
 - 카테고리: 교육 (영어 첨삭 서비스 성격). 라이프스타일도 가능
 - 연령 등급: 사용자가 자기 글만 보고 타인과 상호작용이 없으므로 4+
 
