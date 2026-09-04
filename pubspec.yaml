@@ -54,6 +54,7 @@ dependencies:
   app_links: ^7.0.0
   flutter_timezone: ^5.1.0
   package_info_plus: ^9.0.1
+  flutter_web_auth_2: ^5.1.0
 
 dev_dependencies:
   flutter_test:
