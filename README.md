@@ -13,10 +13,9 @@
   <img src="https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter" />
   <img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white" alt="Dart" />
   <img src="https://img.shields.io/badge/iOS%20%C2%B7%20Android-7F011F?style=flat-square" alt="iOS · Android 모바일 프로젝트" />
-  <img src="https://img.shields.io/badge/Solo%20Development-7F011F?style=flat-square" alt="1인 개발" />
 </p>
 
-[서비스 소개](#서비스-소개) · [주요 화면](#주요-화면) · [아키텍처](#프로젝트-구조와-아키텍처) · [기술 스택](#기술-스택) · [1인 개발](#1인-개발)
+[서비스 소개](#서비스-소개) · [주요 화면](#주요-화면) · [아키텍처](#프로젝트-구조와-아키텍처) · [기술 스택](#기술-스택) · [Contributors](#contributors)
 
 [Figma 디자인 보기](https://www.figma.com/design/pefUeII1iwdOtgnDiwBmSr/Dear-Jolly?node-id=964-8750&m=dev)
 
@@ -173,19 +172,19 @@ flowchart LR
 
 [테마](lib/core/theme/)와 [공통 위젯](lib/core/widgets/)으로 색상, 글꼴, 버튼, 편지 헤더, 우표 카드와 다이얼로그를 관리합니다. 개별 화면에서도 같은 편지 서비스의 인상이 이어지도록 구성했습니다.
 
-## 1인 개발
+## Contributors
 
-> **한 명의 개발자가 모바일 화면부터 상태 관리, API 연동, 예외 처리와 테스트까지 연결한 프로젝트입니다.**
-
-단순한 화면 구현을 넘어, 편지 작성과 교정 확인이라는 핵심 경험이 실제 앱 흐름으로 이어지도록 모바일 클라이언트 전반을 개발했습니다.
-
-| 담당 영역 | 구현 범위 |
-| :--- | :--- |
-| UI 구현 | Figma 디자인을 Flutter 화면과 공통 테마·위젯으로 구성 |
-| 앱 구조 | 기능별 화면, 도메인·데이터 계층, Provider 의존성 연결 |
-| 서비스 연동 | 소셜 로그인, 편지 제출·조회, 피드백·우표 데이터 표시 |
-| 안정성 | 인증 갱신, 입력 검증, 대기·실패·재시도와 앱 생명주기 처리 |
-| 검증 | DTO 변환, 초기 진입 분기, 편지 제출과 화면 동작에 대한 테스트 코드 |
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/yeonjeen">
+        <img src="https://avatars.githubusercontent.com/u/144861180?v=4" width="100" alt="YeonJeen GitHub 프로필" /><br />
+        <b>YeonJeen</b><br />
+        @yeonjeen
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## 로컬 실행
 
