@@ -5,6 +5,8 @@ import 'dart:math' as math;
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -129,6 +131,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  // 로그인 창을 앱 안에서 띄운다. Safari 앱으로 나갔다가 커스텀 스킴으로 돌아오는 방식은
+  // 사용자가 앱으로 되돌아오지 못하면 그대로 막히기 때문에, 인증이 끝나면 스스로 닫히고
+  // 콜백 URL 을 그대로 돌려주는 시스템 인증 세션(iOS ASWebAuthenticationSession)을 쓴다.
   Future<void> _startSocialLogin(SocialLoginType type) async {
     setState(() => _loadingType = type);
 
@@ -136,23 +141,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ? LoginProvider.apple
         : LoginProvider.kakao;
     final loginUri = ref.read(loginUseCaseProvider).authorizationUri(provider);
-    bool launched;
+    if (!Platform.isIOS) {
+      var launched = false;
+      try {
+        launched = await launchUrl(
+          loginUri,
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (_) {
+        // Report launch failures below.
+      }
+      if (!mounted) return;
+      setState(() => _loadingType = null);
+      if (!launched) {
+        JollyToast.show(context, message: '로그인 페이지를 열 수 없습니다.');
+      }
+      return;
+    }
+
+    String callbackUrl;
     try {
-      launched = await launchUrl(
-        loginUri,
-        mode: LaunchMode.externalApplication,
+      callbackUrl = await FlutterWebAuth2.authenticate(
+        url: loginUri.toString(),
+        callbackUrlScheme: ApiConfig.authCallbackScheme,
+        options: const FlutterWebAuth2Options(preferEphemeral: false),
       );
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      setState(() => _loadingType = null);
+      if (error.code != 'CANCELED') {
+        JollyToast.show(context, message: '로그인 페이지를 열 수 없습니다.');
+      }
+      return;
     } catch (_) {
-      launched = false;
+      if (!mounted) return;
+      setState(() => _loadingType = null);
+      JollyToast.show(context, message: '로그인 페이지를 열 수 없습니다.');
+      return;
     }
 
     if (!mounted) return;
 
-    setState(() => _loadingType = null);
-
-    if (!launched) {
-      JollyToast.show(context, message: '로그인 페이지를 열 수 없습니다.');
+    final callbackUri = Uri.tryParse(callbackUrl);
+    if (callbackUri == null || !_isAuthCallback(callbackUri)) {
+      setState(() => _loadingType = null);
+      JollyToast.show(context, message: '로그인 정보를 받지 못했습니다.');
+      return;
     }
+
+    await _handleAuthCallback(callbackUri);
   }
 
   Future<void> _handleAuthCallback(Uri uri) async {

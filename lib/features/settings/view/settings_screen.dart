@@ -8,8 +8,10 @@ import '../../../core/config/support_links.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/platform/open_legal_document.dart';
 import '../../../core/platform/open_web_page.dart';
+import '../../../core/config/api_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
+import '../../../core/utils/external_link.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
 import '../../../core/widgets/jolly_dialog.dart';
 import '../../../core/widgets/jolly_loading_indicator.dart';
@@ -28,11 +30,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   User? _user;
   bool _isLoading = true;
   bool _isWorking = false;
+  String? _appVersion;
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    _loadAppVersion();
   }
 
   @override
@@ -93,9 +97,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
+                      if (ApiConfig.noticeUri != null) ...[
+                        _SettingsMenuItem(
+                          label: '공지사항',
+                          onTap: () => ExternalLink.open(
+                            context,
+                            ApiConfig.noticeUri,
+                            failureMessage: '공지사항을 열 수 없습니다.',
+                          ),
+                          showMore: true,
+                        ),
+                        const SizedBox(height: 40),
+                      ],
                       _SettingsMenuItem(
-                        label: '공지사항',
-                        onTap: () {},
+                        label: '서비스 이용약관',
+                        onTap: () => openLegalDocument(
+                          context,
+                          LegalDocument.serviceTerms,
+                        ),
                         showMore: true,
                       ),
                       const SizedBox(height: 40),
@@ -129,7 +148,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const SizedBox(height: 64),
                 Text(
-                  '현재 버전 1.0.0 (MVP)',
+                  '현재 버전 ${_appVersion ?? '-'}',
                   textAlign: TextAlign.center,
                   style: AppTextTheme.detail3Md13.copyWith(
                     color: AppColors.gray300,
@@ -138,6 +157,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
     );
+  }
+
+  Future<void> _loadAppVersion() async {
+    final version = await ref.read(appInfoProvider).appVersion;
+    if (!mounted) return;
+    setState(() => _appVersion = version);
   }
 
   Future<void> _loadUser() async {
