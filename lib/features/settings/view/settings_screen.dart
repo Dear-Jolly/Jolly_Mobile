@@ -146,7 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 64),
+                const SizedBox(height: 60),
                 Text(
                   '현재 버전 ${_appVersion ?? '-'}',
                   textAlign: TextAlign.center,

@@ -25,9 +25,9 @@ class JollyButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: enabled ? onPressed : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: enabled ? AppColors.burgundy : AppColors.gray300,
+          backgroundColor: enabled ? AppColors.burgundy : AppColors.gray400,
           foregroundColor: AppColors.white,
-          disabledBackgroundColor: AppColors.gray300,
+          disabledBackgroundColor: AppColors.gray400,
           disabledForegroundColor: AppColors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),

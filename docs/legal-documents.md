@@ -9,7 +9,7 @@
 | 개인정보 수집·이용 동의 및 처리방침 | https://yeonjeen-0821.notion.site/privacy | 가입 약관, 설정 |
 | 마케팅 정보 수신 동의 | https://yeonjeen-0821.notion.site/marketing | 가입 약관 |
 
-밑줄 친 제목은 문서를 열고 오른쪽 체크박스는 동의 상태를 변경한다.
+약관 항목 제목은 문서를 열고 오른쪽 체크박스는 동의 상태를 변경한다. 별도 보기 버튼이나 밑줄을 추가하지 않는다.
 앱 내 브라우저를 우선 사용하고 열기 실패 시 외부 브라우저로 재시도한다.
 공개 주소는 `lib/core/config/legal_documents.dart`에서 관리한다.
 

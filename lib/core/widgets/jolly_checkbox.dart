@@ -80,9 +80,8 @@ class JollyCheckbox extends StatelessWidget {
                   ),
                   child: Text(
                     label,
-                    style: AppTextTheme.body6Md15.copyWith(
+                    style: AppTextTheme.body3Md16.copyWith(
                       color: AppColors.gray900,
-                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
@@ -95,7 +94,7 @@ class JollyCheckbox extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
                 child: SvgPicture.asset(
                   isChecked
                       ? 'assets/icons/ic_checkbox_selected.svg'
@@ -120,7 +119,7 @@ class JollyCheckbox extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: AppTextTheme.body6Md15.copyWith(
+                  style: AppTextTheme.body3Md16.copyWith(
                     color: AppColors.gray900,
                   ),
                 ),

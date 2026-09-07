@@ -86,14 +86,14 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 28),
                         JollyCheckbox(
                           label: '전체 동의',
                           isChecked: _allAgreed,
                           onTap: _toggleAll,
                           isAllAgree: true,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         JollyCheckbox(
                           label: '[필수] 서비스 이용약관 동의',
                           isChecked: _termsAgreed,
@@ -103,7 +103,6 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
                             LegalDocument.serviceTerms,
                           ),
                         ),
-                        const SizedBox(height: 24),
                         JollyCheckbox(
                           label: '[필수] 개인정보 수집·이용 동의',
                           isChecked: _privacyAgreed,
@@ -113,7 +112,6 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
                             LegalDocument.privacyPolicy,
                           ),
                         ),
-                        const SizedBox(height: 24),
                         JollyCheckbox(
                           label: '[선택] 마케팅 정보 수신 동의',
                           isChecked: _marketingAgreed,
