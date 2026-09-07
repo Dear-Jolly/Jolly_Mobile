@@ -17,8 +17,6 @@
 
 [서비스 소개](#서비스-소개) · [주요 화면](#주요-화면) · [아키텍처](#프로젝트-구조와-아키텍처) · [기술 스택](#기술-스택) · [Contributors](#contributors)
 
-[Figma 디자인 보기](https://www.figma.com/design/pefUeII1iwdOtgnDiwBmSr/Dear-Jolly?node-id=964-8750&m=dev)
-
 </div>
 
 ---
