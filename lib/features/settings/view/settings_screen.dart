@@ -4,8 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/legal_documents.dart';
+import '../../../core/config/support_links.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/platform/open_legal_document.dart';
+import '../../../core/platform/open_web_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
@@ -45,7 +47,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: _isLoading
           ? const Center(child: JollyLoadingIndicator())
-          : Column(
+          : ListView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.paddingOf(context).bottom + 24,
+              ),
               children: [
                 const SizedBox(height: 24),
                 Padding(
@@ -95,6 +100,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 40),
                       _SettingsMenuItem(
+                        label: '문의하기',
+                        onTap: () => openWebPage(
+                          context,
+                          SupportLinks.inquiryForm,
+                          failureMessage: '문의하기를 열 수 없어요. 잠시 후 다시 시도해주세요.',
+                        ),
+                        showMore: true,
+                      ),
+                      const SizedBox(height: 40),
+                      _SettingsMenuItem(
                         label: '개인정보처리방침',
                         onTap: () => openLegalDocument(
                           context,
@@ -115,6 +130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 64),
                 Text(
                   '현재 버전 1.0.0 (MVP)',
+                  textAlign: TextAlign.center,
                   style: AppTextTheme.detail3Md13.copyWith(
                     color: AppColors.gray300,
                   ),
