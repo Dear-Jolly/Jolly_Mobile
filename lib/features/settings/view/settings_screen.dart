@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/legal_documents.dart';
 import '../../../core/di/providers.dart';
+import '../../../core/platform/open_legal_document.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/jolly_app_bar.dart';
@@ -94,7 +96,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 40),
                       _SettingsMenuItem(
                         label: '개인정보처리방침',
-                        onTap: () {},
+                        onTap: () => openLegalDocument(
+                          context,
+                          LegalDocument.privacyPolicy,
+                        ),
                         showMore: true,
                       ),
                       const SizedBox(height: 40),

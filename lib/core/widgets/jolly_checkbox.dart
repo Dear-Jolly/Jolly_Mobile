@@ -10,6 +10,7 @@ class JollyCheckbox extends StatelessWidget {
   final VoidCallback onTap;
   final bool isAllAgree;
   final Widget? trailing;
+  final VoidCallback? onDetailsTap;
 
   const JollyCheckbox({
     super.key,
@@ -18,6 +19,7 @@ class JollyCheckbox extends StatelessWidget {
     required this.onTap,
     this.isAllAgree = false,
     this.trailing,
+    this.onDetailsTap,
   });
 
   @override
@@ -60,6 +62,53 @@ class JollyCheckbox extends StatelessWidget {
   }
 
   Widget _buildItem() {
+    if (onDetailsTap != null) {
+      return Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              link: true,
+              label: '$label 전문 보기',
+              onTap: onDetailsTap,
+              excludeSemantics: true,
+              child: InkWell(
+                onTap: onDetailsTap,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 12,
+                  ),
+                  child: Text(
+                    label,
+                    style: AppTextTheme.body6Md15.copyWith(
+                      color: AppColors.gray900,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Semantics(
+            label: label,
+            checked: isChecked,
+            child: InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: SvgPicture.asset(
+                  isChecked
+                      ? 'assets/icons/ic_checkbox_selected.svg'
+                      : 'assets/icons/ic_checkbox.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     return GestureDetector(
       onTap: onTap,
       child: Padding(

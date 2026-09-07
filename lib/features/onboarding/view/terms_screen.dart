@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/legal_documents.dart';
 import '../../../core/di/providers.dart';
+import '../../../core/platform/open_legal_document.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_theme.dart';
 import '../../../core/widgets/intro_pattern_background.dart';
@@ -65,55 +67,74 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
         children: [
           const Positioned.fill(child: IntroPatternBackground()),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 50),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      '서비스 이용을 위해\n약관에 동의해주세요',
-                      style: AppTextTheme.head1B22.copyWith(
-                        color: AppColors.gray900,
-                      ),
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 50),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Text(
+                            '서비스 이용을 위해\n약관에 동의해주세요',
+                            style: AppTextTheme.head1B22.copyWith(
+                              color: AppColors.gray900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        JollyCheckbox(
+                          label: '전체 동의',
+                          isChecked: _allAgreed,
+                          onTap: _toggleAll,
+                          isAllAgree: true,
+                        ),
+                        const SizedBox(height: 24),
+                        JollyCheckbox(
+                          label: '[필수] 서비스 이용약관 동의',
+                          isChecked: _termsAgreed,
+                          onTap: _toggleTerms,
+                          onDetailsTap: () => openLegalDocument(
+                            context,
+                            LegalDocument.serviceTerms,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        JollyCheckbox(
+                          label: '[필수] 개인정보 수집·이용 동의',
+                          isChecked: _privacyAgreed,
+                          onTap: _togglePrivacy,
+                          onDetailsTap: () => openLegalDocument(
+                            context,
+                            LegalDocument.privacyPolicy,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        JollyCheckbox(
+                          label: '[선택] 마케팅 정보 수신 동의',
+                          isChecked: _marketingAgreed,
+                          onTap: _toggleMarketing,
+                          onDetailsTap: () => openLegalDocument(
+                            context,
+                            LegalDocument.marketingConsent,
+                          ),
+                        ),
+                        const Spacer(),
+                        JollyButton(
+                          text: '다음',
+                          enabled: _canProceed && !_isSubmitting,
+                          onPressed: _submitTerms,
+                        ),
+                        const SizedBox(height: 29),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  JollyCheckbox(
-                    label: '전체 동의',
-                    isChecked: _allAgreed,
-                    onTap: _toggleAll,
-                    isAllAgree: true,
-                  ),
-                  const SizedBox(height: 24),
-                  JollyCheckbox(
-                    label: '[필수] 서비스 이용약관 동의',
-                    isChecked: _termsAgreed,
-                    onTap: _toggleTerms,
-                  ),
-                  const SizedBox(height: 24),
-                  JollyCheckbox(
-                    label: '[필수] 개인정보 처리방침 동의',
-                    isChecked: _privacyAgreed,
-                    onTap: _togglePrivacy,
-                  ),
-                  const SizedBox(height: 24),
-                  JollyCheckbox(
-                    label: '[선택] 마케팅 정보 수신 동의',
-                    isChecked: _marketingAgreed,
-                    onTap: _toggleMarketing,
-                  ),
-                  const Spacer(),
-                  JollyButton(
-                    text: '다음',
-                    enabled: _canProceed && !_isSubmitting,
-                    onPressed: _submitTerms,
-                  ),
-                  const SizedBox(height: 29),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
