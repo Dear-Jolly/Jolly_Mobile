@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/iOS%20%C2%B7%20Android-7F011F?style=flat-square" alt="iOS · Android 모바일 프로젝트" />
 </p>
 
-[서비스 소개](#서비스-소개) · [주요 화면](#주요-화면) · [아키텍처](#프로젝트-구조와-아키텍처) · [기술 스택](#기술-스택) · [Contributors](#contributors)
+[서비스 소개](#서비스-소개) · [주요 화면](#주요-화면) · [아키텍처](#프로젝트-구조와-아키텍처) · [기술 스택](#기술-스택)
 
 </div>
 
@@ -169,20 +169,6 @@ flowchart LR
 ### 5. 반복되는 브랜드 UI의 공통화
 
 [테마](lib/core/theme/)와 [공통 위젯](lib/core/widgets/)으로 색상, 글꼴, 버튼, 편지 헤더, 우표 카드와 다이얼로그를 관리합니다. 개별 화면에서도 같은 편지 서비스의 인상이 이어지도록 구성했습니다.
-
-## Contributors
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/yeonjeen">
-        <img src="https://avatars.githubusercontent.com/u/144861180?v=4" width="100" alt="YeonJeen GitHub 프로필" /><br />
-        <b>YeonJeen</b><br />
-        @yeonjeen
-      </a>
-    </td>
-  </tr>
-</table>
 
 ## 로컬 실행
 
