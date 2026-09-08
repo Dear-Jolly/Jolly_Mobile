@@ -72,20 +72,17 @@ class JollyDialog extends StatelessWidget {
         child: Padding(
           padding: image == null
               ? const EdgeInsets.fromLTRB(16, 30, 16, 16)
-              : const EdgeInsets.all(24),
+              : const EdgeInsets.fromLTRB(16, 28, 16, 16),
           child: Column(
             mainAxisSize: image == null ? MainAxisSize.max : MainAxisSize.min,
             children: [
-              if (image != null) ...[image!, const SizedBox(height: 16)],
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: AppTextTheme.head7Sb18.copyWith(
-                  color: AppColors.black,
-                ),
+                style: AppTextTheme.head7Sb18.copyWith(color: AppColors.black),
               ),
               if (subtitle != null) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: image == null ? 8 : 4),
                 Text(
                   subtitle!,
                   textAlign: TextAlign.center,
@@ -94,10 +91,8 @@ class JollyDialog extends StatelessWidget {
                   ),
                 ),
               ],
-              if (image == null)
-                const Spacer()
-              else
-                const SizedBox(height: 24),
+              if (image != null) ...[const SizedBox(height: 24), image!],
+              if (image == null) const Spacer() else const SizedBox(height: 30),
               Row(
                 children: [
                   Expanded(

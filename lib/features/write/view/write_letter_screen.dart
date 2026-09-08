@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -12,10 +11,6 @@ import '../../../core/widgets/jolly_dialog.dart';
 import '../../../core/widgets/jolly_letter_header.dart';
 import '../../../core/widgets/jolly_toast.dart';
 import '../state/write_letter_controller.dart';
-
-final _englishLetterInputFormatter = FilteringTextInputFormatter.allow(
-  RegExp(r'[\t\n\r -~]'),
-);
 
 class WriteLetterScreen extends ConsumerStatefulWidget {
   const WriteLetterScreen({super.key});
@@ -76,17 +71,20 @@ class _WriteLetterScreenState extends ConsumerState<WriteLetterScreen> {
       return;
     }
 
+    FocusManager.instance.primaryFocus?.unfocus();
     final confirmed = await JollyDialog.show(
       context,
       title: '편지 작성을 완료할까요?',
-      subtitle: '작성 완료 후에는 수정이 불가능해요',
+      subtitle: '전달된 편지는 다시 고칠 수 없어요.',
       image: Image.asset(
         'assets/images/img_popup_writefinish.png',
-        height: 120,
+        width: 140,
+        height: 118,
         errorBuilder: (context, error, stackTrace) =>
-            const SizedBox(height: 120),
+            const SizedBox(width: 140, height: 118),
       ),
-      confirmText: '완료',
+      cancelText: '계속 쓰기',
+      confirmText: '전달하기',
     );
     if (confirmed == true && mounted) {
       _submitLetter();
@@ -106,6 +104,11 @@ class _WriteLetterScreenState extends ConsumerState<WriteLetterScreen> {
       },
     );
 
+    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final submission =
+        ref.watch(writeLetterControllerProvider).value ??
+        const WriteLetterSubmissionState.idle();
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.ivory100,
@@ -115,117 +118,125 @@ class _WriteLetterScreenState extends ConsumerState<WriteLetterScreen> {
           const CheckPattern(),
           SafeArea(
             top: false,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        children: [
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: Column(
+                      children: [
+                        if (keyboardVisible)
+                          const SizedBox(height: 20)
+                        else
                           JollyLetterHeader(
                             to: 'Jolly',
                             date: _formattedDate(),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 362,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.white,
-                                    borderRadius: BorderRadius.circular(4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            children: [
+                              Container(
+                                height: 362,
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: TextField(
+                                  controller: _contentController,
+                                  onTapOutside: (_) => FocusManager
+                                      .instance
+                                      .primaryFocus
+                                      ?.unfocus(),
+                                  keyboardType: TextInputType.multiline,
+                                  textInputAction: TextInputAction.newline,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                  smartDashesType: SmartDashesType.disabled,
+                                  smartQuotesType: SmartQuotesType.disabled,
+                                  hintLocales: const [Locale('en')],
+                                  maxLength: _maxContentLength,
+                                  maxLines: null,
+                                  expands: true,
+                                  buildCounter:
+                                      (
+                                        BuildContext context, {
+                                        required int currentLength,
+                                        required bool isFocused,
+                                        required int? maxLength,
+                                      }) => null,
+                                  textAlignVertical: TextAlignVertical.top,
+                                  style: AppTextTheme.body3Md16.copyWith(
+                                    color: AppColors.gray900,
                                   ),
-                                  child: TextField(
-                                    controller: _contentController,
-                                    keyboardType: TextInputType.multiline,
-                                    textInputAction: TextInputAction.newline,
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    autocorrect: false,
-                                    enableSuggestions: false,
-                                    smartDashesType: SmartDashesType.disabled,
-                                    smartQuotesType: SmartQuotesType.disabled,
-                                    hintLocales: const [Locale('en')],
-                                    inputFormatters: [
-                                      _englishLetterInputFormatter,
-                                    ],
-                                    maxLength: _maxContentLength,
-                                    maxLines: null,
-                                    expands: true,
-                                    buildCounter:
-                                        (
-                                          BuildContext context, {
-                                          required int currentLength,
-                                          required bool isFocused,
-                                          required int? maxLength,
-                                        }) => const SizedBox.shrink(),
-                                    textAlignVertical: TextAlignVertical.top,
-                                    style: AppTextTheme.body3Md16.copyWith(
-                                      color: AppColors.gray900,
-                                      height: 1.8,
+                                  decoration: InputDecoration(
+                                    hintText: 'Please write your letter.',
+                                    hintStyle: AppTextTheme.body3Md16.copyWith(
+                                      color: AppColors.gray400,
                                     ),
-                                    decoration: InputDecoration(
-                                      hintText: 'Please write your letter.',
-                                      hintStyle: AppTextTheme.body3Md16
-                                          .copyWith(color: AppColors.gray400),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                            vertical: 16,
-                                          ),
-                                      border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 16,
                                     ),
+                                    border: InputBorder.none,
                                   ),
                                 ),
+                              ),
+                              if (!keyboardVisible) ...[
                                 const SizedBox(height: 8),
                                 Align(
                                   alignment: Alignment.centerRight,
-                                  child: Text(
-                                    '$_characterCount/$_maxContentLength',
-                                    style: AppTextTheme.detail3Md13.copyWith(
-                                      color: AppColors.gray400,
-                                    ),
-                                  ),
+                                  child: _buildCharacterCount(),
                                 ),
                               ],
-                            ),
+                            ],
                           ),
-                          const Spacer(),
-                          Consumer(
-                            builder: (context, ref, _) {
-                              final submission =
-                                  ref
-                                      .watch(writeLetterControllerProvider)
-                                      .value ??
-                                  const WriteLetterSubmissionState.idle();
-
-                              return _SubmitSection(
-                                showEnglishWarning: _showEnglishWarning,
-                                canSubmit: _canSubmit,
-                                submission: submission,
-                                onSubmit: _showConfirmDialog,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 29),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+                if (keyboardVisible)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        TextButton(
+                          onPressed: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.burgundy,
+                          ),
+                          child: const Text('키보드 닫기'),
+                        ),
+                        const Spacer(),
+                        _buildCharacterCount(),
+                      ],
+                    ),
+                  ),
+                _SubmitSection(
+                  showEnglishWarning: _showEnglishWarning,
+                  canSubmit: _canSubmit,
+                  submission: submission,
+                  onSubmit: _showConfirmDialog,
+                  showSubmitButton: !keyboardVisible,
+                ),
+                SizedBox(height: keyboardVisible ? 8 : 29),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildCharacterCount() => Text(
+    '$_characterCount/$_maxContentLength',
+    style: AppTextTheme.detail3Md13.copyWith(color: AppColors.gray400),
+  );
 
   Future<void> _submitLetter() async {
     final result = await ref
@@ -276,12 +287,14 @@ class _SubmitSection extends StatelessWidget {
   final bool canSubmit;
   final WriteLetterSubmissionState submission;
   final VoidCallback onSubmit;
+  final bool showSubmitButton;
 
   const _SubmitSection({
     required this.showEnglishWarning,
     required this.canSubmit,
     required this.submission,
     required this.onSubmit,
+    required this.showSubmitButton,
   });
 
   bool get _buttonEnabled =>
@@ -315,14 +328,15 @@ class _SubmitSection extends StatelessWidget {
             ),
           ),
         ],
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: JollyButton(
-            text: '전달하기',
-            enabled: _buttonEnabled,
-            onPressed: onSubmit,
+        if (showSubmitButton)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: JollyButton(
+              text: '전달하기',
+              enabled: _buttonEnabled,
+              onPressed: onSubmit,
+            ),
           ),
-        ),
       ],
     );
   }

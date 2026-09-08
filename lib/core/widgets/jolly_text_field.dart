@@ -58,6 +58,8 @@ class JollyTextField extends StatelessWidget {
           onChanged: onChanged,
           style: AppTextTheme.body3Md16.copyWith(color: AppColors.gray900),
           decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.white,
             hintText: hintText,
             hintStyle: AppTextTheme.body3Md16.copyWith(
               color: AppColors.gray400,

@@ -28,7 +28,8 @@ class IntroSplashLogo extends StatelessWidget {
         final left = (screenWidth - logoWidth) / 2 + _logoCenterOffsetX * scale;
         final rawTop =
             screenHeight * (_logoCenterY / referenceFrameHeight) -
-            logoHeight / 2;
+            logoHeight / 2 +
+            20 * scale;
         final top = rawTop
             .clamp(0.0, math.max(0.0, screenHeight - logoHeight))
             .toDouble();

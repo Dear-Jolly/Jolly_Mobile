@@ -32,61 +32,61 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         children: [
           const CheckPattern(),
           SafeArea(
-            child: Stack(
+            child: Column(
               children: [
-                PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() => _currentPage = index);
-                  },
-                  children: [
-                    _buildPage(
-                      imagePath: 'assets/images/img_onboarding1.png',
-                      imageWidth: 158,
-                      imageHeight: 152,
-                      imageTop: 170,
-                      title: '영어로 쓰는 나의 하루를\n편지에 담아보세요',
-                      subtitle: '짧아도 틀려도 괜찮아요\nJolly가 서툰 영어도 다정하게 고쳐줄 거예요',
-                    ),
-                    _buildPage(
-                      imagePath: 'assets/images/img_onboarding2.png',
-                      imageWidth: 295,
-                      imageHeight: 82,
-                      imageTop: 234,
-                      title: 'Jolly에게 편지를 쓰면\n나만의 우표가 생겨요',
-                      subtitle: '달콤한 하루도, 힘든 순간도\n편지에 담긴 이야기마다 다른 우표가 생겨요',
-                    ),
-                    _buildPage(
-                      imagePath: 'assets/images/img_page_writefinish.png',
-                      imageWidth: 165,
-                      imageHeight: 150,
-                      imageTop: 178,
-                      title: '준비가 됐다면 이제\nJolly를 만나러 가볼까요?',
-                      subtitle: '첫 편지를 Jolly에게 건네보세요\n당신만의 영어 편지 일기가 시작돼요',
-                    ),
-                  ],
-                ),
-                Positioned(
-                  top: 588,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: PageStepper(
-                      totalSteps: 3,
-                      currentStep: _currentPage,
-                    ),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                    },
+                    children: [
+                      _buildPage(
+                        imagePath: 'assets/images/img_onboarding1.png',
+                        imageWidth: 158,
+                        imageHeight: 152,
+                        imageTop: 170,
+                        title: '영어로 쓰는 나의 하루를\n편지에 담아보세요',
+                        subtitle: '짧아도 틀려도 괜찮아요\nJolly가 서툰 영어도 다정하게 고쳐줄 거예요',
+                      ),
+                      _buildPage(
+                        imagePath: 'assets/images/img_onboarding2.png',
+                        imageWidth: 295,
+                        imageHeight: 82,
+                        imageTop: 234,
+                        title: 'Jolly에게 편지를 쓰면\n나만의 우표가 생겨요',
+                        subtitle: '달콤한 하루도, 힘든 순간도\n편지에 담긴 이야기마다 다른 우표가 생겨요',
+                      ),
+                      _buildPage(
+                        imagePath: 'assets/images/img_page_writefinish.png',
+                        imageWidth: 165,
+                        imageHeight: 150,
+                        imageTop: 178,
+                        title: '준비가 됐다면 이제\nJolly를 만나러 가볼까요?',
+                        subtitle: '첫 편지를 Jolly에게 건네보세요\n당신만의 영어 편지 일기가 시작돼요',
+                      ),
+                    ],
                   ),
                 ),
-                if (_currentPage == 2)
-                  Positioned(
-                    left: 24,
-                    right: 24,
-                    bottom: 29,
-                    child: JollyButton(
-                      text: 'Jolly 만나러 가기',
-                      onPressed: () => context.go('/home'),
-                    ),
+                PageStepper(totalSteps: 3, currentStep: _currentPage),
+                const SizedBox(height: 65),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: JollyButton(
+                    text: _currentPage == 2 ? 'Jolly 만나러 가기' : '다음',
+                    onPressed: () {
+                      if (_currentPage == 2) {
+                        context.go('/home');
+                      } else {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
                   ),
+                ),
+                const SizedBox(height: 29),
               ],
             ),
           ),
@@ -103,44 +103,53 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     required String title,
     required String subtitle,
   }) {
-    return Stack(
-      children: [
-        Positioned(
-          top: imageTop,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Image.asset(
-              imagePath,
-              width: imageWidth,
-              height: imageHeight,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) =>
-                  SizedBox(width: imageWidth, height: imageHeight),
+    return SingleChildScrollView(
+      child: SizedBox(
+        height: 490,
+        child: Stack(
+          children: [
+            Positioned(
+              top: imageTop,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Image.asset(
+                  imagePath,
+                  width: imageWidth,
+                  height: imageHeight,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) =>
+                      SizedBox(width: imageWidth, height: imageHeight),
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              top: 352,
+              left: 24,
+              right: 24,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: AppTextTheme.head4Sb20.copyWith(
+                  color: AppColors.gray900,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 416,
+              left: 24,
+              right: 24,
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: AppTextTheme.body6Md15.copyWith(
+                  color: AppColors.gray600,
+                ),
+              ),
+            ),
+          ],
         ),
-        Positioned(
-          top: 352,
-          left: 24,
-          right: 24,
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: AppTextTheme.head4Sb20.copyWith(color: AppColors.gray900),
-          ),
-        ),
-        Positioned(
-          top: 416,
-          left: 24,
-          right: 24,
-          child: Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: AppTextTheme.body6Md15.copyWith(color: AppColors.gray600),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
