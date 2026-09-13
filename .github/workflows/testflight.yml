@@ -56,7 +56,7 @@ jobs:
           set -euo pipefail
           python3 -m venv "$RUNNER_TEMP/ascvenv"
           "$RUNNER_TEMP/ascvenv/bin/pip" install --quiet --disable-pip-version-check cryptography
-          NEXT="$("$RUNNER_TEMP/ascvenv/bin/python" scripts/ci/next_build_number.py)"
+          NEXT="$(cd scripts/ci && "$RUNNER_TEMP/ascvenv/bin/python" next_build_number.py)"
           echo "다음 빌드 번호: $NEXT"
           echo "value=$NEXT" >> "$GITHUB_OUTPUT"
 
@@ -182,6 +182,18 @@ jobs:
           echo "Uploading $IPA"
           xcrun altool --upload-app -f "$IPA" -t ios \
             --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+
+      # 애플이 빌드를 등록하는 데 2 분쯤 걸린다. 그 전에 이 실행이 끝나면
+      # 뒤이어 도는 실행이 방금 올린 번호를 못 보고 같은 번호를 고른다.
+      # concurrency 가 실행을 직렬화하므로 여기서 확인하고 끝내면 충돌하지 않는다.
+      - name: Wait for App Store Connect to register the build
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          ASC_APP_ID: ${{ env.APP_STORE_APP_ID }}
+          BUILD_NUMBER: ${{ steps.build_number.outputs.value }}
+        run: cd scripts/ci && "$RUNNER_TEMP/ascvenv/bin/python" wait_for_build.py
 
       - name: Clean up keychain
         if: always()
