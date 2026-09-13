@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  FLUTTER_VERSION: 3.38.1
+  FLUTTER_VERSION: 3.47.4
   BUNDLE_ID: com.dearjolly.app
 
 jobs:

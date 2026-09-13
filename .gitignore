@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# 코드 서명·배포 비밀값. 저장소에 절대 들어가면 안 된다.
+*.p8
+*.p12
+*.mobileprovision
+*.cer
